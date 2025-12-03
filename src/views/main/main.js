@@ -1,5 +1,6 @@
 import { AbstractView } from "../../common/view";
 import onChange from "on-change";
+import { Header } from "../../components/header/header";
 
 export class MainView extends AbstractView {
   state = {
@@ -23,16 +24,15 @@ export class MainView extends AbstractView {
 
   render() {
     const main = document.createElement("main");
-    main.innerHTML = `
-        <h1>Search for Books</h1>
-        <form id="search-form">
-          <input type="text" id="search-input" placeholder="Enter book title or author" required />
-          <button type="submit">Search</button>
-        </form>
-        <div id="results"></div>
-      `;
     this.app.innerHTML = "";
     this.app.append(main);
+    this.renderHeader();
     this.appState.favorites.push("Example Book");
+  }
+
+  renderHeader() {
+    const header = new Header(this.appState);
+    header.render();
+    this.app.prepend(header.element);
   }
 }
