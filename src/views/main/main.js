@@ -1,9 +1,24 @@
 import { AbstractView } from "../../common/view";
+import onChange from "on-change";
 
 export class MainView extends AbstractView {
-  constructor() {
+  state = {
+    list: [],
+    loading: false,
+    searchQuery: undefined,
+    offset: 0,
+  };
+  constructor(appState) {
     super();
+    this.appState = appState;
+    this.appState = onChange(this.appState, this.appStateHook.bind(this));
     this.setTitle("Search books");
+  }
+
+  appStateHook(path, value) {
+    if (path === "favorites") {
+      console.log(value);
+    }
   }
 
   render() {
@@ -18,5 +33,6 @@ export class MainView extends AbstractView {
       `;
     this.app.innerHTML = "";
     this.app.append(main);
+    this.appState.favorites.push("Example Book");
   }
 }
