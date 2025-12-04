@@ -38,7 +38,6 @@ body {
     -moz-text-size-adjust: none;
     -webkit-text-size-adjust: none;
     text-size-adjust: none;
-    font-family: "Ubuntu", sans-serif;
 }
 
 input,
@@ -131,4 +130,19 @@ textarea:not([rows]) {
 
 :target {
     scroll-margin-block: 5ex;
+}
+
+:root {
+    --black: #121212;
+    --white: #fafafa;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    color: var(--black);
+}
+
+#root {
+    max-width: 800px;
+    margin: 0 auto;
 }
