@@ -47,6 +47,8 @@ export class MainView extends AbstractView {
         this.state.searchQuery,
         this.state.offset
       );
+      console.log(data);
+      this.state.numFound = data.numFound;
       this.state.list = [...this.state.list, ...data.docs];
       this.state.loading = false;
     }
@@ -63,7 +65,7 @@ export class MainView extends AbstractView {
     this.app.innerHTML = "";
     this.app.append(main);
     this.renderHeader();
-    this.appState.favorites.push("Example Book");
+    //this.appState.favorites.push("Example Book");
   }
 
   renderHeader() {
