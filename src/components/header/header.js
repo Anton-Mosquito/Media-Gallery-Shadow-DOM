@@ -1,33 +1,147 @@
-import { DivComponent } from "../../common/div-component";
-import "./header.css";
+import { BaseComponent } from "../../common/base-component.js";
 
-export class Header extends DivComponent {
-  constructor(appState) {
-    super("", "header");
-    this.appState = appState;
+const styles = `
+    .logo img {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .menu__item img {
+      width: 22px;
+      height: 22px;
+      object-fit: contain;
+      display: block;
+    }
+  :host {
+    display: block;
+    width: 100%;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 30px;
+    margin-top: 20px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .menu {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    line-height: 20px;
+    text-decoration: none;
+    color: var(--black, #000);
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .menu__item:hover {
+    opacity: 0.7;
+  }
+
+  .menu__item:visited {
+    color: var(--black, #000);
+  }
+
+  .menu__counter {
+    font-weight: 600;
+    font-size: 12px;
+    line-height: 28px;
+    border: 1px solid var(--black, #000);
+    border-radius: 50%;
+    padding: 0 10px;
+    min-width: 28px;
+    text-align: center;
+  }
+
+  /* Slot styles */
+  ::slotted([slot="logo"]) {
+    height: 40px;
+  }
+
+  ::slotted([slot="extra-menu"]) {
+    margin-left: 20px;
+  }
+`;
+
+export class HeaderComponent extends BaseComponent {
+  static get observedAttributes() {
+    return ["favorites-count"];
+  }
+
+  constructor() {
+    super();
+    this._favoritesCount = 0;
+  }
+
+  get favoritesCount() {
+    return this._favoritesCount;
+  }
+
+  set favoritesCount(value) {
+    this._favoritesCount = parseInt(value) || 0;
+    this.setAttribute("favorites-count", this._favoritesCount);
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === "favorites-count" && oldValue !== newValue) {
+      this._favoritesCount = parseInt(newValue) || 0;
+      this.updateCounter();
+    }
+  }
+
+  updateCounter() {
+    const counter = this.shadowRoot.querySelector(".menu__counter");
+    if (counter) {
+      counter.textContent = this._favoritesCount;
+    }
   }
 
   render() {
-    this.element.innerHTML = "";
-    this.setClass("header");
-    this.element.innerHTML = `
-	<div>
-		<img src="/static/cinema.svg" alt="Logo" />
-	 </div>
-			<div class="menu">
-				<a class="menu__item" href="#">
-					<img src="/static/search.svg" alt="Search icon" />
-					Search books
-				</a>
-				<a class="menu__item" href="#favorites">
-					<img src="/static/favorite.svg" alt="Favorites icon" />
-					Favorites
-					<div class="menu__counter">
-						${this.appState.favorites.length}
-					</div>
-				</a>
-			</div>
+    this.shadowRoot.innerHTML = "";
+    this.shadowRoot.appendChild(this.adoptGlobalStyles());
+    this.shadowRoot.appendChild(this.createStyle(styles));
+
+    const template = document.createElement("template");
+    template.innerHTML = `
+      <div class="header">
+        <div class="logo">
+          <slot name="logo">
+            <img src="/static/cinema.svg" alt="Logo" />
+          </slot>
+        </div>
+        <div class="menu">
+          <a class="menu__item" href="#" data-nav="search">
+            <img src="/static/search.svg" alt="Search icon" />
+            <span>Search books</span>
+          </a>
+          <a class="menu__item" href="#favorites" data-nav="favorites">
+            <img src="/static/favorite.svg" alt="Favorites icon" />
+            <span>Favorites</span>
+            <div class="menu__counter">${this._favoritesCount}</div>
+          </a>
+          <slot name="extra-menu"></slot>
+        </div>
+      </div>
     `;
-    return this.element;
+
+    this.shadowRoot.appendChild(template.content.cloneNode(true));
   }
 }
+
+customElements.define("header-component", HeaderComponent);
