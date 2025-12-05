@@ -2,12 +2,18 @@
 import { AbstractView } from "../../common/view.js";
 import onChange from "on-change";
 import { eventBus } from "../../common/event-bus.js";
+import { FavoritesService } from "../../common/favorites-service.js";
 
 import "../../components/header/header.js";
 import "../../components/card-list/card-list.js";
 import "../../components/card/card.js";
 
 export class FavoritesView extends AbstractView {
+  #elements = {
+    header: null,
+    cardList: null,
+  };
+
   constructor(appState) {
     super();
     this.appState = appState;
@@ -23,9 +29,7 @@ export class FavoritesView extends AbstractView {
 
   handleFavoriteToggle({ book, isFavorite }) {
     if (!isFavorite) {
-      this.appState.favorites = this.appState.favorites.filter(
-        (b) => b.key !== book.key
-      );
+      FavoritesService.remove(this.appState, book);
     }
   }
 
@@ -48,9 +52,9 @@ export class FavoritesView extends AbstractView {
     title.textContent = "Favorites";
     main.appendChild(title);
 
-    const cardList = document.createElement("card-list-component");
-    cardList.id = "favorites-list";
-    main.appendChild(cardList);
+    this.#elements.cardList = document.createElement("card-list-component");
+    this.#elements.cardList.id = "favorites-list";
+    main.appendChild(this.#elements.cardList);
 
     this.app.innerHTML = "";
     this.app.appendChild(main);
@@ -60,27 +64,25 @@ export class FavoritesView extends AbstractView {
   }
 
   renderHeader() {
-    const header = document.createElement("header-component");
-    header.id = "favorites-header";
-    header.favoritesCount = this.appState.favorites.length;
-    this.app.prepend(header);
+    this.#elements.header = document.createElement("header-component");
+    this.#elements.header.id = "favorites-header";
+    this.#elements.header.favoritesCount = this.appState.favorites.length;
+    this.app.prepend(this.#elements.header);
   }
 
   updateHeader() {
-    const header = this.app.querySelector("#favorites-header");
-    if (header) {
-      header.favoritesCount = this.appState.favorites.length;
+    if (this.#elements.header) {
+      this.#elements.header.favoritesCount = this.appState.favorites.length;
     }
   }
 
   updateCardList() {
-    const cardList = this.app.querySelector("#favorites-list");
-    if (cardList) {
+    if (this.#elements.cardList) {
       const favoritesWithFlag = this.appState.favorites.map((book) => ({
         ...book,
         isFavorite: true,
       }));
-      cardList.setCards(favoritesWithFlag);
+      this.#elements.cardList.setCards(favoritesWithFlag);
     }
   }
 }

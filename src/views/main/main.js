@@ -1,6 +1,8 @@
 import { AbstractView } from "../../common/view";
 import onChange from "on-change";
 import { eventBus } from "../../common/event-bus";
+import { bookService } from "../../common/book-service";
+import { FavoritesService } from "../../common/favorites-service";
 
 import "../../components/header/header.js";
 import "../../components/search/search.js";
@@ -8,19 +10,31 @@ import "../../components/card-list/card-list.js";
 import "../../components/card/card.js";
 
 export class MainView extends AbstractView {
-  state = {
-    list: [],
-    loading: false,
-    searchQuery: undefined,
-    offset: 0,
-    numFound: 0,
+  #state = null;
+  #elements = {
+    header: null,
+    resultsHeader: null,
+    cardList: null,
   };
+
+  get state() {
+    return this.#state;
+  }
 
   constructor(appState) {
     super();
     this.appState = appState;
     this.appState = onChange(this.appState, this.appStateHook.bind(this));
-    this.state = onChange(this.state, this.stateHook.bind(this));
+
+    const initialState = {
+      list: [],
+      loading: false,
+      searchQuery: undefined,
+      offset: 0,
+      numFound: 0,
+    };
+
+    this.#state = onChange(initialState, this.stateHook.bind(this));
     this.setTitle("Search books");
 
     this.setupEventListeners();
@@ -32,25 +46,13 @@ export class MainView extends AbstractView {
   }
 
   handleSearch({ query }) {
-    console.log("Search initiated:", query);
     this.state.searchQuery = query;
     this.state.offset = 0;
     this.state.list = [];
   }
 
   handleFavoriteToggle({ book, isFavorite }) {
-    console.log("Favorite toggle:", book.title, isFavorite);
-
-    if (isFavorite) {
-      const exists = this.appState.favorites.find((b) => b.key === book.key);
-      if (!exists) {
-        this.appState.favorites = [...this.appState.favorites, book];
-      }
-    } else {
-      this.appState.favorites = this.appState.favorites.filter(
-        (b) => b.key !== book.key
-      );
-    }
+    FavoritesService.toggle(this.appState, book, isFavorite);
   }
 
   destroy() {
@@ -68,30 +70,28 @@ export class MainView extends AbstractView {
     this.updateCardList();
   }
 
-  async loadList(query, offset = 0) {
-    const response = await fetch(
-      `https://openlibrary.org/search.json?q=${query}&offset=${offset}&limit=10`
-    );
-    return response.json();
+  async loadBooks() {
+    this.state.loading = true;
+    this.updateCardListLoading();
+
+    try {
+      const data = await bookService.searchBooks(
+        this.state.searchQuery,
+        this.state.offset
+      );
+
+      this.state.numFound = data.numFound;
+      this.state.list = [...this.state.list, ...data.docs];
+    } catch (error) {
+      console.error("Error loading books:", error);
+    } finally {
+      this.state.loading = false;
+    }
   }
 
   async stateHook(path) {
     if (path === "searchQuery") {
-      this.state.loading = true;
-      this.updateCardListLoading();
-
-      try {
-        const data = await this.loadList(
-          this.state.searchQuery,
-          this.state.offset
-        );
-        this.state.numFound = data.numFound;
-        this.state.list = [...this.state.list, ...data.docs];
-        this.state.loading = false;
-      } catch (error) {
-        console.error("Error loading books:", error);
-        this.state.loading = false;
-      }
+      this.loadBooks();
     }
 
     if (path === "list" || path === "loading") {
@@ -103,22 +103,22 @@ export class MainView extends AbstractView {
   render() {
     const main = document.createElement("main");
 
-    const resultsHeader = document.createElement("h1");
-    resultsHeader.id = "results-header";
-    resultsHeader.textContent = this.state.numFound
+    this.#elements.resultsHeader = document.createElement("h1");
+    this.#elements.resultsHeader.id = "results-header";
+    this.#elements.resultsHeader.textContent = this.state.numFound
       ? `Books found – ${this.state.numFound}`
       : "Enter a query to search";
 
-    main.appendChild(resultsHeader);
+    main.appendChild(this.#elements.resultsHeader);
 
     const searchComponent = document.createElement("search-component");
     searchComponent.query = this.state.searchQuery || "";
     main.appendChild(searchComponent);
 
-    const cardList = document.createElement("card-list-component");
-    cardList.id = "card-list";
-    cardList.loading = this.state.loading;
-    main.appendChild(cardList);
+    this.#elements.cardList = document.createElement("card-list-component");
+    this.#elements.cardList.id = "card-list";
+    this.#elements.cardList.loading = this.state.loading;
+    main.appendChild(this.#elements.cardList);
 
     this.app.innerHTML = "";
     this.app.appendChild(main);
@@ -128,46 +128,42 @@ export class MainView extends AbstractView {
   }
 
   renderHeader() {
-    const header = document.createElement("header-component");
-    header.id = "main-header";
-    header.favoritesCount = this.appState.favorites.length;
-    this.app.prepend(header);
+    this.#elements.header = document.createElement("header-component");
+    this.#elements.header.id = "main-header";
+    this.#elements.header.favoritesCount = this.appState.favorites.length;
+    this.app.prepend(this.#elements.header);
   }
 
   updateHeader() {
-    const header = this.app.querySelector("#main-header");
-    if (header) {
-      header.favoritesCount = this.appState.favorites.length;
+    if (this.#elements.header) {
+      this.#elements.header.favoritesCount = this.appState.favorites.length;
     }
   }
 
   updateResultsCount() {
-    const resultsHeader = this.app.querySelector("#results-header");
-    if (resultsHeader) {
-      resultsHeader.textContent = this.state.numFound
+    if (this.#elements.resultsHeader) {
+      this.#elements.resultsHeader.textContent = this.state.numFound
         ? `Books found – ${this.state.numFound}`
         : "Enter a query to search";
     }
   }
 
   updateCardList() {
-    const cardList = this.app.querySelector("#card-list");
-    if (!cardList) return;
+    if (!this.#elements.cardList) return;
 
-    cardList.loading = this.state.loading;
+    this.#elements.cardList.loading = this.state.loading;
 
     const booksWithFavorites = this.state.list.map((book) => ({
       ...book,
       isFavorite: this.appState.favorites.some((f) => f.key === book.key),
     }));
 
-    cardList.setCards(booksWithFavorites);
+    this.#elements.cardList.setCards(booksWithFavorites);
   }
 
   updateCardListLoading() {
-    const cardList = this.app.querySelector("#card-list");
-    if (cardList) {
-      cardList.loading = true;
+    if (this.#elements.cardList) {
+      this.#elements.cardList.loading = true;
     }
   }
 }
