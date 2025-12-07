@@ -23,6 +23,8 @@ export class MainView extends AbstractView {
 
   constructor(appState) {
     super();
+    this.handleSearch = this.handleSearch.bind(this);
+    this.handleFavoriteToggle = this.handleFavoriteToggle.bind(this);
     this.appState = appState;
     this.appState = onChange(this.appState, this.appStateHook.bind(this));
 
@@ -41,8 +43,8 @@ export class MainView extends AbstractView {
   }
 
   setupEventListeners() {
-    eventBus.on("search", this.handleSearch.bind(this));
-    eventBus.on("favorite-toggle", this.handleFavoriteToggle.bind(this));
+    eventBus.on("search", this.handleSearch);
+    eventBus.on("favorite-toggle", this.handleFavoriteToggle);
   }
 
   handleSearch({ query }) {
@@ -58,8 +60,8 @@ export class MainView extends AbstractView {
   destroy() {
     onChange.unsubscribe(this.appState);
     onChange.unsubscribe(this.state);
-    eventBus.off("search", this.handleSearch.bind(this));
-    eventBus.off("favorite-toggle", this.handleFavoriteToggle.bind(this));
+    eventBus.off("search", this.handleSearch);
+    eventBus.off("favorite-toggle", this.handleFavoriteToggle);
   }
 
   appStateHook(path) {
