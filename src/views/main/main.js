@@ -30,7 +30,6 @@ export class MainView extends AbstractView {
 
     const initialState = {
       list: [],
-      loading: false,
       searchQuery: undefined,
       offset: 0,
       numFound: 0,
@@ -67,14 +66,12 @@ export class MainView extends AbstractView {
   appStateHook(path) {
     if (path !== "favorites") return;
 
-    console.log("Favorites updated:", this.appState.favorites.length);
     this.updateHeader();
     this.updateCardList();
   }
 
   async loadBooks() {
-    this.state.loading = true;
-    this.updateCardListLoading();
+    this.setCardListLoading(true);
 
     try {
       const data = await bookService.searchBooks(
@@ -87,18 +84,18 @@ export class MainView extends AbstractView {
     } catch (error) {
       console.error("Error loading books:", error);
     } finally {
-      this.state.loading = false;
+      this.setCardListLoading(false);
     }
   }
 
-  async stateHook(path) {
+  stateHook(path) {
     if (path === "searchQuery") {
       this.loadBooks();
     }
 
-    if (path === "list" || path === "loading") {
-      this.updateCardList();
+    if (path === "list") {
       this.updateResultsCount();
+      this.updateCardList();
     }
   }
 
@@ -137,23 +134,21 @@ export class MainView extends AbstractView {
   }
 
   updateHeader() {
-    if (this.#elements.header) {
-      this.#elements.header.favoritesCount = this.appState.favorites.length;
-    }
+    if (!this.#elements.header) return;
+
+    this.#elements.header.favoritesCount = this.appState.favorites.length;
   }
 
   updateResultsCount() {
-    if (this.#elements.resultsHeader) {
-      this.#elements.resultsHeader.textContent = this.state.numFound
-        ? `Books found – ${this.state.numFound}`
-        : "Enter a query to search";
-    }
+    if (!this.#elements.resultsHeader) return;
+
+    this.#elements.resultsHeader.textContent = this.state.numFound
+      ? `Books found – ${this.state.numFound}`
+      : "Enter a query to search";
   }
 
   updateCardList() {
     if (!this.#elements.cardList) return;
-
-    this.#elements.cardList.loading = this.state.loading;
 
     const booksWithFavorites = this.state.list.map((book) => ({
       ...book,
@@ -163,9 +158,9 @@ export class MainView extends AbstractView {
     this.#elements.cardList.setCards(booksWithFavorites);
   }
 
-  updateCardListLoading() {
-    if (this.#elements.cardList) {
-      this.#elements.cardList.loading = true;
-    }
+  setCardListLoading(flag) {
+    if (!this.#elements.cardList) return;
+
+    this.#elements.cardList.loading = flag;
   }
 }

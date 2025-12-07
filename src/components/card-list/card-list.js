@@ -81,7 +81,6 @@ export class CardListComponent extends BaseComponent {
     }
   }
 
-  // Method для додавання карток
   setCards(cardsData) {
     this._cards = cardsData;
     this.renderCards();
