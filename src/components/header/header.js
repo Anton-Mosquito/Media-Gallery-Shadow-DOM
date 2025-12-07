@@ -1,22 +1,24 @@
 import { BaseComponent } from "../../common/base-component.js";
 
 const styles = `
-    .logo img {
-      width: 40px;
-      height: 40px;
-      object-fit: contain;
-      display: block;
-    }
+  .logo img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    display: block;
+  }
 
-    .menu__item img {
-      width: 22px;
-      height: 22px;
-      object-fit: contain;
-      display: block;
-    }
+  .menu__item img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
+    display: block;
+  }
+
   :host {
     display: block;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .header {
@@ -86,30 +88,24 @@ export class HeaderComponent extends BaseComponent {
 
   constructor() {
     super();
-    this._favoritesCount = 0;
   }
 
   get favoritesCount() {
-    return this._favoritesCount;
-  }
-
-  set favoritesCount(value) {
-    this._favoritesCount = parseInt(value) || 0;
-    this.setAttribute("favorites-count", this._favoritesCount);
+    const v = Number(this.getAttribute("favorites-count"));
+    return Number.isFinite(v) ? v : 0;
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (name === "favorites-count" && oldValue !== newValue) {
-      this._favoritesCount = parseInt(newValue) || 0;
-      this.updateCounter();
+      this.#updateCounter();
     }
   }
 
-  updateCounter() {
+  #updateCounter() {
     const counter = this.shadowRoot.querySelector(".menu__counter");
-    if (counter) {
-      counter.textContent = this._favoritesCount;
-    }
+    if (!counter) return;
+
+    counter.textContent = String(this.favoritesCount);
   }
 
   render() {
@@ -133,7 +129,7 @@ export class HeaderComponent extends BaseComponent {
           <a class="menu__item" href="#favorites" data-nav="favorites">
             <img src="/static/favorite.svg" alt="Favorites icon" />
             <span>Favorites</span>
-            <div class="menu__counter">${this._favoritesCount}</div>
+            <div class="menu__counter">${this.favoritesCount}</div>
           </a>
           <slot name="extra-menu"></slot>
         </div>

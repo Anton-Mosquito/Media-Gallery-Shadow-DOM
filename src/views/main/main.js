@@ -123,15 +123,26 @@ export class MainView extends AbstractView {
 
   #renderHeader() {
     this.#elements.header = document.createElement("header-component");
-    this.#elements.header.id = "main-header";
-    this.#elements.header.favoritesCount = this.appState.favorites.length;
+
+    this.#updateHeader();
+
     this.app.prepend(this.#elements.header);
   }
 
   #updateHeader() {
     if (!this.#elements.header) return;
 
-    this.#elements.header.favoritesCount = this.appState.favorites.length;
+    this.#setAttributeOnElement(
+      this.#elements.header,
+      "favorites-count",
+      this.appState.favorites.length
+    );
+  }
+
+  #setAttributeOnElement(element, attrName, value) {
+    if (!element) return;
+
+    element.setAttribute(attrName, String(value));
   }
 
   #updateResultsCount() {
