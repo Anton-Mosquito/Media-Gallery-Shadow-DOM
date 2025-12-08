@@ -114,118 +114,35 @@ const styles = `
 `;
 
 export class CardComponent extends BaseComponent {
+  #data = {};
+
   static get observedAttributes() {
-    return ["book-key", "title", "author", "subject", "cover", "is-favorite"];
+    return ["film-data"];
   }
 
   constructor() {
     super();
-    this._bookData = {
-      key: "",
+    this.#data = {
+      id: "",
       title: "",
-      author: "",
-      subject: "",
-      cover: "",
+      year: "",
+      type: "",
+      poster: "",
       isFavorite: false,
     };
-  }
-
-  get bookKey() {
-    return this._bookData.key;
-  }
-  set bookKey(value) {
-    this._bookData.key = value;
-    this.setAttribute("book-key", value);
-  }
-
-  get title() {
-    return this._bookData.title;
-  }
-  set title(value) {
-    this._bookData.title = value;
-    this.setAttribute("title", value);
-  }
-
-  get author() {
-    return this._bookData.author;
-  }
-  set author(value) {
-    this._bookData.author = value;
-    this.setAttribute("author", value);
-  }
-
-  get subject() {
-    return this._bookData.subject;
-  }
-  set subject(value) {
-    this._bookData.subject = value;
-    this.setAttribute("subject", value);
-  }
-
-  get cover() {
-    return this._bookData.cover;
-  }
-  set cover(value) {
-    this._bookData.cover = value;
-    this.setAttribute("cover", value);
-  }
-
-  get isFavorite() {
-    return this._bookData.isFavorite;
-  }
-  set isFavorite(value) {
-    this._bookData.isFavorite = value === true || value === "true";
-    if (this._bookData.isFavorite) {
-      this.setAttribute("is-favorite", "");
-    } else {
-      this.removeAttribute("is-favorite");
-    }
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
 
     switch (name) {
-      case "book-key":
-        this._bookData.key = newValue || "";
-        break;
-      case "title":
-        this._bookData.title = newValue || "";
-        this.updateContent();
-        break;
-      case "author":
-        this._bookData.author = newValue || "Unknown author";
-        this.updateContent();
-        break;
-      case "subject":
-        this._bookData.subject = newValue || "Unknown";
-        this.updateContent();
-        break;
-      case "cover":
-        this._bookData.cover = newValue || "";
-        this.updateCover();
+      case "film-data":
+        this.render();
         break;
       case "is-favorite":
-        this._bookData.isFavorite = this.hasAttribute("is-favorite");
+        this.#data.isFavorite = this.hasAttribute("is-favorite");
         this.updateButton();
         break;
-    }
-  }
-
-  updateContent() {
-    const titleEl = this.shadowRoot.querySelector(".card__name");
-    const authorEl = this.shadowRoot.querySelector(".card__author");
-    const subjectEl = this.shadowRoot.querySelector(".card__tag");
-
-    if (titleEl) titleEl.textContent = this._bookData.title;
-    if (authorEl) authorEl.textContent = this._bookData.author;
-    if (subjectEl) subjectEl.textContent = this._bookData.subject;
-  }
-
-  updateCover() {
-    const img = this.shadowRoot.querySelector(".card__image img");
-    if (img) {
-      img.src = this._bookData.cover;
     }
   }
 
@@ -233,7 +150,7 @@ export class CardComponent extends BaseComponent {
     const button = this.shadowRoot.querySelector(".button__add");
     if (!button) return;
 
-    if (this._bookData.isFavorite) {
+    if (this.#data.isFavorite) {
       button.classList.add("button__active");
       button.innerHTML =
         '<img src="/static/favorite.svg" alt="Remove from favorites" />';
@@ -253,28 +170,26 @@ export class CardComponent extends BaseComponent {
     template.innerHTML = `
       <div class="card">
         <div class="card__image">
-          <img src="${this._bookData.cover}" alt="Book cover" loading="lazy" />
+          <img src="${this.#data.poster}" alt="Book cover" loading="lazy" />
         </div>
         <div class="card__info">
-          <div class="card__tag">${this._bookData.subject || "Unknown"}</div>
-          <div class="card__name">${this._bookData.title || "Untitled"}</div>
-          <div class="card__author">${
-            this._bookData.author || "Unknown author"
-          }</div>
+          <div class="card__tag">${this.#data.year || "Unknown"}</div>
+          <div class="card__name">${this.#data.title || "Untitled"}</div>
+          <div class="card__author">${this.#data.type || "Unknown author"}</div>
           <div class="card__footer">
             <button class="button__add ${
-              this._bookData.isFavorite ? "button__active" : ""
+              this.#data.isFavorite ? "button__active" : ""
             }" 
                     aria-label="${
-                      this._bookData.isFavorite
+                      this.#data.isFavorite
                         ? "Remove from favorites"
                         : "Add to favorites"
                     }">
               <img src="/static/favorite${
-                this._bookData.isFavorite ? "" : "-white"
+                this.#data.isFavorite ? "" : "-white"
               }.svg" 
                    alt="${
-                     this._bookData.isFavorite
+                     this.#data.isFavorite
                        ? "Remove from favorites"
                        : "Add to favorites"
                    }" />
@@ -294,17 +209,15 @@ export class CardComponent extends BaseComponent {
   }
 
   handleFavoriteToggle() {
-    const newState = !this._bookData.isFavorite;
+    const newState = !this.#data.isFavorite;
 
-    // Емітимо подію з даними книги
     this.emit("favorite-toggle", {
-      book: {
-        key: this._bookData.key,
-        title: this._bookData.title,
-        author: this._bookData.author,
-        subject: this._bookData.subject,
-        cover_edition_key: this._bookData.cover.split("/").pop().split("-")[0],
-        author_name: [this._bookData.author],
+      film: {
+        id: this.#data.id,
+        title: this.#data.title,
+        type: this.#data.type,
+        poster: this.#data.poster,
+        year: this.#data.year,
       },
       isFavorite: newState,
     });

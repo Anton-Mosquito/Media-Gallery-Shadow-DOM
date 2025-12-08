@@ -1,7 +1,7 @@
 export class FilmService {
   #baseUrl = "http://www.omdbapi.com/";
 
-  async searchBooks(query, offset = 1) {
+  async searchFilms(query, offset = 1) {
     try {
       const response = await fetch(
         `${this.#baseUrl}?s=${encodeURIComponent(

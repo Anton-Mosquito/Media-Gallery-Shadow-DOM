@@ -25,7 +25,7 @@ export class MainView extends AbstractView {
     const initialState = {
       list: [],
       searchQuery: undefined,
-      offset: 1,
+      page: 1,
       totalResults: 0,
     };
 
@@ -49,7 +49,7 @@ export class MainView extends AbstractView {
 
   #handleSearch = ({ query }) => {
     this.#state.searchQuery = query;
-    this.#state.offset = 1;
+    this.#state.page = 1;
     this.#state.list = [];
   };
 
@@ -65,12 +65,12 @@ export class MainView extends AbstractView {
   }
 
   async #retrieveFilms() {
-    this.#setCardListLoading(true);
+    this.#setAttributeOnElement(this.#elements.cardList, "loading", true);
 
     try {
       const data = await filmService.searchFilms(
         this.#state.searchQuery,
-        this.#state.offset
+        this.#state.page
       );
       const { Search = [], totalResults = 0 } = data;
 
@@ -79,7 +79,7 @@ export class MainView extends AbstractView {
     } catch (error) {
       console.error("Error loading books:", error);
     } finally {
-      this.#setCardListLoading(false);
+      this.#setAttributeOnElement(this.#elements.cardList, "loading", false);
     }
   }
 
@@ -98,7 +98,6 @@ export class MainView extends AbstractView {
     const main = document.createElement("main");
 
     this.#elements.resultsHeader = document.createElement("h1");
-    this.#elements.resultsHeader.id = "results-header";
     this.#elements.resultsHeader.textContent = this.#state.totalResults
       ? `Books found – ${this.#state.totalResults}`
       : "Enter a query to search";
@@ -106,12 +105,19 @@ export class MainView extends AbstractView {
     main.appendChild(this.#elements.resultsHeader);
 
     const searchComponent = document.createElement("search-component");
-    searchComponent.query = this.#state.searchQuery || "";
+    this.#setAttributeOnElement(
+      searchComponent,
+      "query",
+      this.#state.searchQuery || ""
+    );
     main.appendChild(searchComponent);
 
     this.#elements.cardList = document.createElement("card-list-component");
-    this.#elements.cardList.id = "card-list";
-    this.#elements.cardList.loading = this.#state.loading;
+    this.#setAttributeOnElement(
+      this.#elements.cardList,
+      "loading",
+      this.#state.loading
+    );
     main.appendChild(this.#elements.cardList);
 
     this.app.innerHTML = "";
@@ -139,12 +145,6 @@ export class MainView extends AbstractView {
     );
   }
 
-  #setAttributeOnElement(element, attrName, value) {
-    if (!element) return;
-
-    element.setAttribute(attrName, String(value));
-  }
-
   #updateResultsCount() {
     if (!this.#elements.resultsHeader) return;
 
@@ -164,9 +164,9 @@ export class MainView extends AbstractView {
     this.#elements.cardList.setCards(filmsWithFavorites);
   }
 
-  #setCardListLoading(flag) {
-    if (!this.#elements.cardList) return;
+  #setAttributeOnElement(element, attrName, value) {
+    if (!element) return;
 
-    this.#elements.cardList.loading = flag;
+    element.setAttribute(attrName, String(value));
   }
 }
