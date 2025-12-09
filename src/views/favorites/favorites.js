@@ -27,9 +27,9 @@ export class FavoritesView extends AbstractView {
     eventBus.on("favorite-toggle", this.handleFavoriteToggle.bind(this));
   }
 
-  handleFavoriteToggle({ book, isFavorite }) {
+  handleFavoriteToggle({ film, isFavorite }) {
     if (!isFavorite) {
-      FavoritesService.remove(this.appState, book);
+      FavoritesService.remove(this.appState, film);
     }
   }
 

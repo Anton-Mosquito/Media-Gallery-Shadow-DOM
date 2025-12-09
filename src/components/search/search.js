@@ -1,13 +1,6 @@
 import { BaseComponent } from "../../common/base-component.js";
 
 const styles = `
-    .search__icon img,
-    .search__button img {
-      width: 20px;
-      height: 20px;
-      object-fit: contain;
-      display: block;
-    }
   :host {
     display: block;
     width: 100%;
@@ -31,6 +24,14 @@ const styles = `
     left: 10px;
     top: 12px;
     pointer-events: none;
+  }
+
+  .search__icon img,
+  .search__button img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    display: block;
   }
 
   .search__input {
@@ -130,23 +131,23 @@ export class SearchComponent extends BaseComponent {
   }
 
   updateInput() {
-    const input = this.shadowRoot.querySelector("input");
+    const input = this._root.querySelector("input");
     if (input && input.value !== this._query) {
       input.value = this._query;
     }
   }
 
   updatePlaceholder() {
-    const input = this.shadowRoot.querySelector("input");
+    const input = this._root.querySelector("input");
     if (input) {
       input.placeholder = this._placeholder;
     }
   }
 
   render() {
-    this.shadowRoot.innerHTML = "";
-    this.shadowRoot.appendChild(this.adoptGlobalStyles());
-    this.shadowRoot.appendChild(this.createStyle(styles));
+    this._root.innerHTML = "";
+    this._root.appendChild(this.adoptGlobalStyles());
+    this._root.appendChild(this.createStyle(styles));
 
     const template = document.createElement("template");
     template.innerHTML = `
@@ -174,12 +175,12 @@ export class SearchComponent extends BaseComponent {
       </div>
     `;
 
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this._root.appendChild(template.content.cloneNode(true));
   }
 
   attachEventListeners() {
-    const button = this.shadowRoot.querySelector(".search__button");
-    const input = this.shadowRoot.querySelector("input");
+    const button = this._root.querySelector(".search__button");
+    const input = this._root.querySelector("input");
 
     button.addEventListener("click", () => this.handleSearch());
 
@@ -198,7 +199,7 @@ export class SearchComponent extends BaseComponent {
   }
 
   handleSearch() {
-    const input = this.shadowRoot.querySelector("input");
+    const input = this._root.querySelector("input");
     const query = input.value.trim();
 
     // Емітимо подію пошуку

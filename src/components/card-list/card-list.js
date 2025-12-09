@@ -60,9 +60,6 @@ export class CardListComponent extends BaseComponent {
   }
 
   connectedCallback() {
-    if (!this.shadowRoot) {
-      this.attachShadow({ mode: "open" });
-    }
     if (!this.#isInited) {
       this.#initShell();
       this.#isInited = true;
@@ -89,8 +86,8 @@ export class CardListComponent extends BaseComponent {
   }
 
   #initShell() {
-    this.shadowRoot.appendChild(this.adoptGlobalStyles());
-    this.shadowRoot.appendChild(this.createStyle(styles));
+    this._root.appendChild(this.adoptGlobalStyles());
+    this._root.appendChild(this.createStyle(styles));
 
     const template = document.createElement("template");
     template.innerHTML = `
@@ -102,16 +99,16 @@ export class CardListComponent extends BaseComponent {
         <slot name="empty">No films found</slot>
       </div>
     `;
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this._root.appendChild(template.content.cloneNode(true));
   }
 
   render() {
-    if (!this.shadowRoot) return;
+    if (!this._root) return;
     this.setAttribute("aria-busy", this.loading ? "true" : "false");
 
-    const loader = this.shadowRoot.querySelector("#loader");
-    const empty = this.shadowRoot.querySelector("#empty-state");
-    const grid = this.shadowRoot.querySelector("#card-grid");
+    const loader = this._root.querySelector("#loader");
+    const empty = this._root.querySelector("#empty-state");
+    const grid = this._root.querySelector("#card-grid");
 
     if (this.loading) {
       if (loader) loader.hidden = false;
@@ -127,8 +124,8 @@ export class CardListComponent extends BaseComponent {
   }
 
   #renderCards() {
-    const grid = this.shadowRoot.querySelector("#card-grid");
-    const emptyState = this.shadowRoot.querySelector("#empty-state");
+    const grid = this._root.querySelector("#card-grid");
+    const emptyState = this._root.querySelector("#empty-state");
 
     if (!grid) return;
 
@@ -149,7 +146,8 @@ export class CardListComponent extends BaseComponent {
     this.#cards.forEach((cardData) => {
       const card = document.createElement("card-component");
 
-      card.setAttribute("film-data", JSON.stringify(cardData));
+      card.filmData = cardData;
+      //card.setAttribute("film-data", JSON.stringify(cardData));
       frag.appendChild(card);
     });
 

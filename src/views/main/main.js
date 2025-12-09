@@ -53,15 +53,14 @@ export class MainView extends AbstractView {
     this.#state.list = [];
   };
 
-  #handleFavoriteToggle = ({ book, isFavorite }) => {
-    FavoritesService.toggle(this.appState, book, isFavorite);
+  #handleFavoriteToggle = ({ film, isFavorite }) => {
+    FavoritesService.toggle(this.appState, film, isFavorite);
   };
 
   appStateHook(path) {
     if (path !== "favorites") return;
 
     this.#updateHeader();
-    this.#updateCardList();
   }
 
   async #retrieveFilms() {
@@ -158,7 +157,7 @@ export class MainView extends AbstractView {
 
     const filmsWithFavorites = this.#state.list.map((film) => ({
       ...film,
-      isFavorite: this.appState.favorites.some(({ key }) => key === film.key),
+      isFavorite: this.appState.favorites.some(({ id }) => id === film.imdbID),
     }));
 
     this.#elements.cardList.setCards(filmsWithFavorites);

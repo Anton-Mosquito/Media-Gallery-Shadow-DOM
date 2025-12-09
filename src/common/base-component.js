@@ -4,8 +4,8 @@ import { eventBus } from "./event-bus.js";
 export class BaseComponent extends HTMLElement {
   constructor() {
     super();
-
-    this.attachShadow({ mode: "open" });
+    // create a closed shadow root and keep an internal reference
+    this._root = this.attachShadow({ mode: "closed" });
     this._eventBus = eventBus;
     this._unsubscribers = [];
   }

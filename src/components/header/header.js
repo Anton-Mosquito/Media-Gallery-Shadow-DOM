@@ -102,16 +102,16 @@ export class HeaderComponent extends BaseComponent {
   }
 
   #updateCounter() {
-    const counter = this.shadowRoot.querySelector(".menu__counter");
+    const counter = this._root.querySelector(".menu__counter");
     if (!counter) return;
 
     counter.textContent = String(this.favoritesCount);
   }
 
   render() {
-    this.shadowRoot.innerHTML = "";
-    this.shadowRoot.appendChild(this.adoptGlobalStyles());
-    this.shadowRoot.appendChild(this.createStyle(styles));
+    this._root.innerHTML = "";
+    this._root.appendChild(this.adoptGlobalStyles());
+    this._root.appendChild(this.createStyle(styles));
 
     const template = document.createElement("template");
     template.innerHTML = `
@@ -136,7 +136,7 @@ export class HeaderComponent extends BaseComponent {
       </div>
     `;
 
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this._root.appendChild(template.content.cloneNode(true));
   }
 }
 

@@ -19,7 +19,7 @@ const styles = `
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 180px;
+    height: 200px;
     width: 100%;
     overflow: hidden;
     border-top-left-radius: 8px;
@@ -102,9 +102,14 @@ const styles = `
   .button__active {
     background: var(--white, #fff);
   }
-
-  .button__active img {
-    filter: invert(1);
+    
+  .button__add img {
+    display: block;
+    width: 18px;
+    height: 18px;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
   }
 
   /* Slot styling */
@@ -115,9 +120,10 @@ const styles = `
 
 export class CardComponent extends BaseComponent {
   #data = {};
+  #filmData = {};
 
   static get observedAttributes() {
-    return ["film-data"];
+    return ["film-data", "is-favorite"];
   }
 
   constructor() {
@@ -132,22 +138,46 @@ export class CardComponent extends BaseComponent {
     };
   }
 
+  get filmData() {
+    return this.#filmData;
+  }
+
+  set filmData(value) {
+    this.#filmData = value;
+    this.#data.id = value.imdbID || "";
+    this.#data.title = value.Title || "";
+    this.#data.year = value.Year || "";
+    this.#data.type = value.Type || "";
+    this.#data.poster = value.Poster || "";
+    this.#data.isFavorite = value.isFavorite || false;
+    this.render();
+  }
+
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) return;
 
     switch (name) {
       case "film-data":
-        this.render();
+        try {
+          const parsed =
+            typeof newValue === "string" && newValue.trim() !== ""
+              ? JSON.parse(newValue)
+              : newValue;
+
+          if (parsed) this.filmData = parsed;
+        } catch (err) {
+          console.warn("card-component: invalid film-data attribute", err);
+        }
         break;
       case "is-favorite":
         this.#data.isFavorite = this.hasAttribute("is-favorite");
-        this.updateButton();
+        this.#updateButton();
         break;
     }
   }
 
-  updateButton() {
-    const button = this.shadowRoot.querySelector(".button__add");
+  #updateButton() {
+    const button = this._root.querySelector(".button__add");
     if (!button) return;
 
     if (this.#data.isFavorite) {
@@ -162,9 +192,9 @@ export class CardComponent extends BaseComponent {
   }
 
   render() {
-    this.shadowRoot.innerHTML = "";
-    this.shadowRoot.appendChild(this.adoptGlobalStyles());
-    this.shadowRoot.appendChild(this.createStyle(styles));
+    this._root.innerHTML = "";
+    this._root.appendChild(this.adoptGlobalStyles());
+    this._root.appendChild(this.createStyle(styles));
 
     const template = document.createElement("template");
     template.innerHTML = `
@@ -179,20 +209,14 @@ export class CardComponent extends BaseComponent {
           <div class="card__footer">
             <button class="button__add ${
               this.#data.isFavorite ? "button__active" : ""
-            }" 
+            }"
                     aria-label="${
                       this.#data.isFavorite
                         ? "Remove from favorites"
                         : "Add to favorites"
-                    }">
-              <img src="/static/favorite${
-                this.#data.isFavorite ? "" : "-white"
-              }.svg" 
-                   alt="${
-                     this.#data.isFavorite
-                       ? "Remove from favorites"
-                       : "Add to favorites"
-                   }" />
+                    }"
+                    aria-pressed="${this.#data.isFavorite ? "true" : "false"}">
+              ${this.#renderFavoriteButton()}
             </button>
             <slot name="actions"></slot>
           </div>
@@ -200,16 +224,35 @@ export class CardComponent extends BaseComponent {
       </div>
     `;
 
-    this.shadowRoot.appendChild(template.content.cloneNode(true));
+    this._root.appendChild(template.content.cloneNode(true));
+
+    this.#attachEventListeners();
   }
 
-  attachEventListeners() {
-    const button = this.shadowRoot.querySelector(".button__add");
-    button.addEventListener("click", () => this.handleFavoriteToggle());
+  #attachEventListeners() {
+    const button = this._root.querySelector(".button__add");
+    if (!button) return;
+
+    button.addEventListener("click", this.#handleFavoriteToggle);
+
+    const img = this._root.querySelector(".card__image img");
+
+    if (!img) return;
+
+    img.addEventListener(
+      "error",
+      () => {
+        img.src = "/static/placeholder.png";
+      },
+      { once: true }
+    );
   }
 
-  handleFavoriteToggle() {
+  #handleFavoriteToggle = () => {
     const newState = !this.#data.isFavorite;
+
+    this.#data.isFavorite = newState;
+    this.#updateButton();
 
     this.emit("favorite-toggle", {
       film: {
@@ -221,6 +264,23 @@ export class CardComponent extends BaseComponent {
       },
       isFavorite: newState,
     });
+  };
+
+  disconnectedCallback() {
+    const button = this._root?.querySelector?.(".button__add");
+
+    if (button) button.removeEventListener("click", this.#handleFavoriteToggle);
+    if (super.disconnectedCallback) super.disconnectedCallback();
+  }
+
+  #renderFavoriteButton() {
+    const src = this.#data.isFavorite
+      ? "/static/favorite.svg"
+      : "/static/favorite-white.svg";
+    const alt = this.#data.isFavorite
+      ? "Remove from favorites"
+      : "Add to favorites";
+    return `<img src="${src}" alt="${alt}" />`;
   }
 }
 
