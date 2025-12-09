@@ -1,5 +1,6 @@
 // src/components/card/card.js
 import { BaseComponent } from "../../common/base-component.js";
+import "../ui/icon-button/icon-button.js";
 
 const styles = `
   :host {
@@ -80,41 +81,8 @@ const styles = `
     margin-top: auto;
     display: flex;
     padding-top: 10px;
-  }
-
-  .button__add {
-    border-radius: 6px;
-    width: 36px;
-    height: 32px;
-    display: flex;
+    gap: 8px;
     align-items: center;
-    justify-content: center;
-    background: none;
-    border: 1px solid var(--white, #fff);
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  .button__add:hover {
-    transform: scale(1.05);
-  }
-
-  .button__active {
-    background: var(--white, #fff);
-  }
-    
-  .button__add img {
-    display: block;
-    width: 18px;
-    height: 18px;
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-  }
-
-  /* Slot styling */
-  ::slotted([slot="actions"]) {
-    margin-left: 8px;
   }
 `;
 
@@ -171,23 +139,35 @@ export class CardComponent extends BaseComponent {
         break;
       case "is-favorite":
         this.#data.isFavorite = this.hasAttribute("is-favorite");
-        this.#updateButton();
+        this.#updateFavoriteButton();
         break;
     }
   }
 
-  #updateButton() {
-    const button = this._root.querySelector(".button__add");
+  #updateFavoriteButton() {
+    const button = this._root.querySelector("icon-button");
     if (!button) return;
 
-    if (this.#data.isFavorite) {
-      button.classList.add("button__active");
-      button.innerHTML =
-        '<img src="/static/favorite.svg" alt="Remove from favorites" />';
-    } else {
-      button.classList.remove("button__active");
-      button.innerHTML =
-        '<img src="/static/favorite-white.svg" alt="Add to favorites" />';
+    const ariaLabel = this.#data.isFavorite
+      ? "Remove from favorites"
+      : "Add to favorites";
+    const iconSrc = this.#data.isFavorite
+      ? "/static/favorite.svg"
+      : "/static/favorite-white.svg";
+
+    if (this.#data.isFavorite) button.setAttribute("active", "");
+    else button.removeAttribute("active");
+
+    button.setAttribute("aria-label", ariaLabel);
+    button.setAttribute(
+      "aria-pressed",
+      this.#data.isFavorite ? "true" : "false"
+    );
+
+    const img = this._root.querySelector("icon-button > img");
+    if (img) {
+      img.src = iconSrc;
+      img.alt = ariaLabel;
     }
   }
 
@@ -207,17 +187,25 @@ export class CardComponent extends BaseComponent {
           <div class="card__name">${this.#data.title || "Untitled"}</div>
           <div class="card__author">${this.#data.type || "Unknown author"}</div>
           <div class="card__footer">
-            <button class="button__add ${
-              this.#data.isFavorite ? "button__active" : ""
-            }"
-                    aria-label="${
-                      this.#data.isFavorite
-                        ? "Remove from favorites"
-                        : "Add to favorites"
-                    }"
-                    aria-pressed="${this.#data.isFavorite ? "true" : "false"}">
-              ${this.#renderFavoriteButton()}
-            </button>
+            <icon-button
+              ${this.#data.isFavorite ? "active" : ""}
+              aria-label="${
+                this.#data.isFavorite
+                  ? "Remove from favorites"
+                  : "Add to favorites"
+              }"
+              aria-pressed="${this.#data.isFavorite ? "true" : "false"}">
+              <img src="${
+                this.#data.isFavorite
+                  ? "/static/favorite.svg"
+                  : "/static/favorite-white.svg"
+              }" 
+                   alt="${
+                     this.#data.isFavorite
+                       ? "Remove from favorites"
+                       : "Add to favorites"
+                   }" />
+            </icon-button>
             <slot name="actions"></slot>
           </div>
         </div>
@@ -230,7 +218,7 @@ export class CardComponent extends BaseComponent {
   }
 
   #attachEventListeners() {
-    const button = this._root.querySelector(".button__add");
+    const button = this._root.querySelector("icon-button");
     if (!button) return;
 
     button.addEventListener("click", this.#handleFavoriteToggle);
@@ -252,7 +240,7 @@ export class CardComponent extends BaseComponent {
     const newState = !this.#data.isFavorite;
 
     this.#data.isFavorite = newState;
-    this.#updateButton();
+    this.#updateFavoriteButton();
 
     this.emit("favorite-toggle", {
       film: {
@@ -267,20 +255,10 @@ export class CardComponent extends BaseComponent {
   };
 
   disconnectedCallback() {
-    const button = this._root?.querySelector?.(".button__add");
+    const button = this._root?.querySelector?.("icon-button");
 
     if (button) button.removeEventListener("click", this.#handleFavoriteToggle);
     if (super.disconnectedCallback) super.disconnectedCallback();
-  }
-
-  #renderFavoriteButton() {
-    const src = this.#data.isFavorite
-      ? "/static/favorite.svg"
-      : "/static/favorite-white.svg";
-    const alt = this.#data.isFavorite
-      ? "Remove from favorites"
-      : "Add to favorites";
-    return `<img src="${src}" alt="${alt}" />`;
   }
 }
 
