@@ -1,9 +1,12 @@
 import { BaseComponent } from "../../common/base-component.js";
+import "../ui/search-input/search-input.js";
+import "../ui/icon-button/icon-button.js";
 
 const styles = `
   :host {
     display: block;
     width: 100%;
+    box-sizing: border-box;
   }
 
   .search {
@@ -13,44 +16,9 @@ const styles = `
     margin-bottom: 30px;
   }
 
-  .search__wrapper {
-    position: relative;
-    flex: 1;
-    display: flex;
-  }
-
-  .search__icon {
-    position: absolute;
-    left: 10px;
-    top: 12px;
-    pointer-events: none;
-  }
-
-  .search__icon img,
   .search__button img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    display: block;
-  }
-
-  .search__input {
-    background: #DEDEDE;
-    border: none;
-    border-radius: 5px;
-    color: #252525;
-    padding: 15px 30px 15px 50px;
-    flex: 1;
-    font-size: 14px;
-  }
-
-  .search__input::placeholder {
-    color: #494949;
-  }
-
-  .search__input:focus {
-    outline: 2px solid var(--black, #000);
-    outline-offset: 2px;
+    width: 30px;
+    height: 30px;
   }
 
   .search__button {
@@ -58,8 +26,6 @@ const styles = `
     background: var(--black, #000);
     border-radius: 5px;
     display: flex;
-    align-items: center;
-    justify-content: center;
     cursor: pointer;
     padding: 10px 20px;
     transition: opacity 0.2s;
@@ -72,16 +38,6 @@ const styles = `
   .search__button:active {
     opacity: 0.6;
   }
-
-  ::slotted([slot="search-icon"]) {
-    width: 20px;
-    height: 20px;
-  }
-
-  ::slotted([slot="button-icon"]) {
-    width: 20px;
-    height: 20px;
-  }
 `;
 
 export class SearchComponent extends BaseComponent {
@@ -91,28 +47,6 @@ export class SearchComponent extends BaseComponent {
 
   constructor() {
     super();
-    this._query = "";
-    this._placeholder = "Find a book or author....";
-  }
-
-  get query() {
-    return this._query;
-  }
-
-  set query(value) {
-    if (this._query !== value) {
-      this._query = value;
-      this.setAttribute("query", value);
-    }
-  }
-
-  get placeholder() {
-    return this._placeholder;
-  }
-
-  set placeholder(value) {
-    this._placeholder = value;
-    this.setAttribute("placeholder", value);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -120,28 +54,30 @@ export class SearchComponent extends BaseComponent {
 
     switch (name) {
       case "query":
-        this._query = newValue || "";
-        this.updateInput();
+        this.#updateInput();
         break;
       case "placeholder":
-        this._placeholder = newValue || "Find a book or author....";
-        this.updatePlaceholder();
+        this.#updatePlaceholder();
         break;
     }
   }
 
-  updateInput() {
-    const input = this._root.querySelector("input");
-    if (input && input.value !== this._query) {
-      input.value = this._query;
-    }
+  #updateInput() {
+    const inputComp = this._root.querySelector("search-input");
+    if (!inputComp) return;
+
+    const attr = this.getAttribute("query") || "";
+
+    if (inputComp.value !== attr) inputComp.value = attr;
   }
 
-  updatePlaceholder() {
-    const input = this._root.querySelector("input");
-    if (input) {
-      input.placeholder = this._placeholder;
-    }
+  #updatePlaceholder() {
+    const inputComp = this._root.querySelector("search-input");
+    if (!inputComp) return;
+
+    const attr =
+      this.getAttribute("placeholder") || "Find a book or author....";
+    inputComp.setAttribute("placeholder", attr);
   }
 
   render() {
@@ -152,26 +88,17 @@ export class SearchComponent extends BaseComponent {
     const template = document.createElement("template");
     template.innerHTML = `
       <div class="search">
-        <div class="search__wrapper">
-          <input
-            name="search"
-            type="text"
-            placeholder="${this._placeholder}"
-            class="search__input"
-            value="${this._query}"
-            aria-label="Search input"
-          />
-          <div class="search__icon">
-            <slot name="search-icon">
-              <img src="/static/search.svg" alt="Search icon" />
-            </slot>
-          </div>
-        </div>
-        <button class="search__button" aria-label="Search">
-          <slot name="button-icon">
-            <img src="/static/search-white.svg" alt="Search icon" />
-          </slot>
-        </button>
+        <search-input
+          value="${this.getAttribute("query") || ""}"
+          placeholder="${
+            this.getAttribute("placeholder") || "Find a book or author...."
+          }"
+        >
+          <img slot="icon" src="/static/search.svg" alt="Search icon" />
+        </search-input>
+        <icon-button class="search__button" aria-label="Search">
+          <img src="/static/search-white.svg" alt="Search icon" />
+        </icon-button>
       </div>
     `;
 
@@ -179,31 +106,50 @@ export class SearchComponent extends BaseComponent {
   }
 
   attachEventListeners() {
-    const button = this._root.querySelector(".search__button");
-    const input = this._root.querySelector("input");
+    const button = this._root.querySelector("icon-button");
+    const input = this._root.querySelector("search-input");
 
-    button.addEventListener("click", () => this.handleSearch());
-
-    input.addEventListener("keydown", (e) => {
-      if (e.code === "Enter") {
-        this.handleSearch();
-      }
-    });
-
-    // Real-time input change
-    input.addEventListener("input", (e) => {
-      this._query = e.target.value;
-      // Емітимо подію для real-time пошуку (опціонально)
-      this.emit("search-input", { query: this._query });
-    });
+    if (button) button.addEventListener("icon-button-click", this.#handleClick);
+    if (input) {
+      input.addEventListener("search-input", this.#handleSearch);
+      input.addEventListener("search", this.#handleSearch);
+    }
   }
 
-  handleSearch() {
-    const input = this._root.querySelector("input");
-    const query = input.value.trim();
-
-    // Емітимо подію пошуку
+  #handleClick = () => {
+    const inputComp = this._root.querySelector("search-input");
+    const query = inputComp ? (inputComp.value || "").trim() : "";
     this.emit("search", { query });
+  };
+
+  #handleSearch = (e) => {
+    const evtQuery =
+      e?.detail && typeof e.detail.query === "string"
+        ? e.detail.query.trim()
+        : null;
+
+    if (evtQuery != null) {
+      this.emit("search", { query: evtQuery });
+      return;
+    }
+
+    const inputComp = this._root.querySelector("search-input");
+    const query = inputComp ? (inputComp.value || "").trim() : "";
+
+    this.emit("search", { query });
+  };
+
+  disconnectedCallback() {
+    const button = this._root.querySelector("icon-button");
+    const inputComp = this._root.querySelector("search-input");
+
+    if (inputComp) {
+      inputComp.removeEventListener("search-input", this.#handleSearch);
+      inputComp.removeEventListener("search", this.#handleSearch);
+    }
+    if (button)
+      button.removeEventListener("icon-button-click", this.#handleClick);
+    if (super.disconnectedCallback) super.disconnectedCallback();
   }
 }
 
