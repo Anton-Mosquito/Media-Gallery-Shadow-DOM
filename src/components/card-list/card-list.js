@@ -1,4 +1,5 @@
 import { BaseComponent } from "../../common/base-component.js";
+import "../ui/loader/loader.js";
 
 const styles = `
   :host {
@@ -7,15 +8,8 @@ const styles = `
     box-sizing: border-box;
   }
 
-  :host([aria-busy="true"]) .card-grid { opacity: 0.6; pointer-events: none; }
-
-  .card-list__loader {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    padding: 30px;
-    color: var(--card-list-text, #000);
+  :host([aria-busy="true"]) .card-grid {
+    opacity: 0.6; pointer-events: none;
   }
 
   .card-list__empty {
@@ -31,7 +25,13 @@ const styles = `
     gap: var(--card-gap, 30px);
   }
 
-  .card-list__loader[hidden], .card-list__empty[hidden] {
+  .card-list__loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+    
+  card-list__empty[hidden] {
     display: none;
   }
 
@@ -93,9 +93,7 @@ export class CardListComponent extends BaseComponent {
 
     const template = document.createElement("template");
     template.innerHTML = `
-      <div class="card-list__loader" id="loader" hidden>
-        <slot name="loader">Loading...</slot>
-      </div>
+      <loader-component class="card-list__loader" hidden></loader-component>
       <div class="card-grid" id="card-grid" role="list"></div>
       <div class="card-list__empty" id="empty-state" hidden>
         <slot name="empty">No films found</slot>
@@ -108,7 +106,7 @@ export class CardListComponent extends BaseComponent {
     if (!this._root) return;
     this.setAttribute("aria-busy", this.loading ? "true" : "false");
 
-    const loader = this._root.querySelector("#loader");
+    const loader = this._root.querySelector("loader-component");
     const empty = this._root.querySelector("#empty-state");
     const grid = this._root.querySelector("#card-grid");
 
