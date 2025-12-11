@@ -4,8 +4,9 @@ const styles = `
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    width: 36px;
+    width: 32px;
     height: 32px;
+    box-sizing: border-box;
     background: none;
     border: 1px solid var(--button-border-color, #fff);
     cursor: pointer;
@@ -62,14 +63,13 @@ export class IconButton extends HTMLElement {
 
   constructor() {
     super();
-    this.#shadow = this.attachShadow({ mode: "open" });
+    this.#shadow = this.attachShadow({ mode: "closed" });
   }
 
   connectedCallback() {
     this.#render();
     this.#attachEventListeners();
 
-    // Make it keyboard accessible
     if (!this.hasAttribute("tabindex")) {
       this.setAttribute("tabindex", "0");
     }
@@ -128,7 +128,6 @@ export class IconButton extends HTMLElement {
     this.#button = document.createElement("button");
     this.#button.setAttribute("type", "button");
 
-    // Set initial attributes
     if (this.hasAttribute("aria-label")) {
       this.#button.setAttribute("aria-label", this.getAttribute("aria-label"));
     }
@@ -142,7 +141,6 @@ export class IconButton extends HTMLElement {
       this.#button.disabled = true;
     }
 
-    // Add slot for icon
     const slot = document.createElement("slot");
     this.#button.appendChild(slot);
 
@@ -173,20 +171,39 @@ export class IconButton extends HTMLElement {
   }
 
   #handleKeydown = (event) => {
+    if (this.hasAttribute("disabled") && event.key !== "Enter") return;
+
+    event.preventDefault();
+    this.#button?.click();
+  };
+
+  #handleClick = (event) => {
     if (this.hasAttribute("disabled")) return;
 
-    if (event.key === "Enter" || event.key === " ") {
-      event.preventDefault();
-      this.#button?.click();
-    }
+    this.dispatchEvent(
+      new CustomEvent("icon-button-click", {
+        detail: {
+          event,
+          active: this.#isActive,
+        },
+        bubbles: true,
+        composed: true,
+      })
+    );
   };
 
   #attachEventListeners() {
     this.addEventListener("keydown", this.#handleKeydown);
+    if (this.#button) {
+      this.#button.addEventListener("click", this.#handleClick);
+    }
   }
 
   #removeEventListeners() {
     this.removeEventListener("keydown", this.#handleKeydown);
+    if (this.#button) {
+      this.#button.removeEventListener("click", this.#handleClick);
+    }
   }
 }
 
