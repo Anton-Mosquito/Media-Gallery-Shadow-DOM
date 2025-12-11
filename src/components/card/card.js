@@ -225,6 +225,8 @@ export class CardComponent extends BaseComponent {
 
     button.addEventListener("click", this.#handleFavoriteToggle);
 
+    this.addEventListener("click", this.#handleOpenFilm);
+
     const img = this._root.querySelector(".card__image img");
 
     if (!img) return;
@@ -250,10 +252,18 @@ export class CardComponent extends BaseComponent {
     });
   };
 
+  #handleOpenFilm = (e) => {
+    const path = e.composedPath ? e.composedPath() : [];
+    if (path.some((el) => el && el.tagName === "ICON-BUTTON")) return;
+
+    this.emit("open-film", { imdbID: this.#data.imdbID });
+  };
+
   disconnectedCallback() {
     const button = this._root?.querySelector?.("icon-button");
 
     if (button) button.removeEventListener("click", this.#handleFavoriteToggle);
+    this.removeEventListener("click", this.#handleOpenFilm);
     if (super.disconnectedCallback) super.disconnectedCallback();
   }
 }

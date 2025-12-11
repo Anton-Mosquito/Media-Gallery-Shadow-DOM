@@ -38,6 +38,7 @@ export class MainView extends AbstractView {
   #setupEventListeners() {
     eventBus.on("search", this.#handleSearch);
     eventBus.on("favorite-toggle", this.#handleFavoriteToggle);
+    eventBus.on("open-film", this.#handleOpenFilm);
   }
 
   destroy() {
@@ -45,6 +46,7 @@ export class MainView extends AbstractView {
     onChange.unsubscribe(this.#state);
     eventBus.off("search", this.#handleSearch);
     eventBus.off("favorite-toggle", this.#handleFavoriteToggle);
+    eventBus.off("open-film", this.#handleOpenFilm);
   }
 
   #handleSearch = ({ query }) => {
@@ -55,6 +57,12 @@ export class MainView extends AbstractView {
 
   #handleFavoriteToggle = ({ film, isFavorite }) => {
     FavoritesService.toggle(this.appState, film, isFavorite);
+  };
+
+  #handleOpenFilm = ({ imdbID }) => {
+    if (!imdbID) return;
+    this.appState.selectedFilmId = imdbID;
+    window.location.hash = "#detail";
   };
 
   #appStateHook = (path) => {

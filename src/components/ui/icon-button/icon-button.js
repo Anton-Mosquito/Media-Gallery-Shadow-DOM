@@ -4,8 +4,8 @@ const styles = `
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    width: 32px;
-    height: 32px;
+    min-width: 32px;
+    min-height: 32px;
     box-sizing: border-box;
     background: none;
     border: 1px solid var(--button-border-color, #fff);
@@ -34,8 +34,8 @@ const styles = `
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%;
-    height: 100%;
+    width: auto;
+    height: auto;
     border: none;
     background: none;
     cursor: inherit;
@@ -44,8 +44,8 @@ const styles = `
 
   ::slotted(img) {
     display: block;
-    width: 18px;
-    height: 18px;
+    width: var(--icon-size, 18px);
+    height: var(--icon-size, 18px);
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;

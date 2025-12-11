@@ -16,12 +16,8 @@ const styles = `
     margin-bottom: 30px;
   }
 
-  .search__button img {
-    width: 30px;
-    height: 30px;
-  }
-
   .search__button {
+    --icon-size: 30px;
     border: none;
     background: var(--black, #000);
     border-radius: 5px;

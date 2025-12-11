@@ -1,3 +1,5 @@
+import { debounce } from "../../../common/utils/debounce.js";
+
 const styles = `
   :host {
     display: block;
@@ -40,6 +42,8 @@ const styles = `
 `;
 
 export class SearchInput extends HTMLElement {
+  #debouncedOnInput = null;
+
   static get observedAttributes() {
     return ["value", "placeholder"];
   }
@@ -47,6 +51,16 @@ export class SearchInput extends HTMLElement {
   constructor() {
     super();
     this._root = this.attachShadow({ mode: "closed" });
+
+    this.#debouncedOnInput = debounce((query) => {
+      this.dispatchEvent(
+        new CustomEvent("search-input", {
+          detail: { query },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }, 300);
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -128,17 +142,18 @@ export class SearchInput extends HTMLElement {
 
     input.removeEventListener("input", this.#onInternalInput);
     input.removeEventListener("keydown", this.#onInternalKeydown);
+
+    if (
+      this.#debouncedOnInput &&
+      typeof this.#debouncedOnInput.cancel === "function"
+    ) {
+      this.#debouncedOnInput.cancel();
+    }
   }
 
   #onInternalInput = (e) => {
     const query = e.target.value;
-    this.dispatchEvent(
-      new CustomEvent("search-input", {
-        detail: { query },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this.#debouncedOnInput(query);
   };
 
   #onInternalKeydown = (e) => {
