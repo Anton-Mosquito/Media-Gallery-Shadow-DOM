@@ -4,6 +4,7 @@ import { FavoritesService } from "../../common/favorites-service";
 import { eventBus } from "../../common/event-bus";
 import "../../components/header/header.js";
 import "../../components/ui/icon-button/icon-button.js";
+import "../../components/ui/loader/loader.js";
 
 const styles = `
 :host {
@@ -61,14 +62,11 @@ const styles = `
   color: #333;
 }
 
-.fav-button {
-  display: inline-block;
+icon-button {
   background: var(--black, #000);
   color: var(--white, #fff);
-  border: none;
   padding: 12px 22px;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: 600;
 }
 
@@ -95,6 +93,16 @@ const styles = `
   border-radius: 8px;
   background: transparent;
   color: #222;
+}
+
+[data-page-loader] {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.75);
+  z-index: 9999;
 }
 `;
 
@@ -128,7 +136,7 @@ export class DetailView extends AbstractView {
     wrapper.className = "detail";
 
     wrapper.innerHTML = `
-      <div class="poster" id="poster">Loading...</div>
+      <div class="poster" id="poster"></div>
       <div class="info">
         <h1 class="title">Loading...</h1>
 
@@ -152,9 +160,7 @@ export class DetailView extends AbstractView {
           <div id="runtime">&nbsp;</div>
         </div>
 
-        <icon-button id="favBtn" aria-label="Add to favorites">
-          <img src="/static/favorite-white.svg" alt="Add to favorites" />
-        </icon-button>
+        <icon-button id="favBtn" aria-label="Add to favorites">Add to favorites</icon-button>
 
         <div class="section-title">Description:</div>
         <div class="plot" id="plot">&nbsp;</div>
@@ -172,9 +178,16 @@ export class DetailView extends AbstractView {
     this.app.appendChild(container);
     this.app.prepend(header);
 
+    const pageLoader = document.createElement("div");
+    pageLoader.setAttribute("data-page-loader", "");
+    pageLoader.innerHTML = `<loader-component big></loader-component>`;
+    this.app.appendChild(pageLoader);
+
     const imdbID = this.appState.selectedFilmId;
     if (!imdbID) {
-      document.querySelector(".title").textContent = "No film selected";
+      const titleEl = this.app.querySelector(".title");
+      if (titleEl) titleEl.textContent = "No film selected";
+      if (pageLoader) pageLoader.remove();
       return;
     }
 
@@ -186,6 +199,8 @@ export class DetailView extends AbstractView {
       console.error("DetailView load error", err);
       const titleEl = this.app.querySelector(".title");
       if (titleEl) titleEl.textContent = "Error loading film";
+    } finally {
+      if (pageLoader) pageLoader.remove();
     }
 
     this.#attachListeners();
@@ -258,20 +273,14 @@ export class DetailView extends AbstractView {
       (f) => f.imdbID === details.imdbID || f.id === details.imdbID
     );
 
-    // icon-button uses an internal button; mirror card behavior: set `active` attr and update slotted img
-    if (favBtn) {
-      const img = favBtn.querySelector("img");
-      const iconSrc = isFav
-        ? "/static/favorite.svg"
-        : "/static/favorite-white.svg";
-      if (isFav) favBtn.setAttribute("active", "");
-      else favBtn.removeAttribute("active");
-      favBtn.setAttribute("aria-pressed", isFav ? "true" : "false");
-      if (img) {
-        img.src = iconSrc;
-        img.alt = isFav ? "Remove from favorites" : "Add to favorites";
-      }
-    }
+    // icon-button uses an internal button; mirror card behavior: set `active` attr and update slotted text
+    if (!favBtn) return;
+    const label = isFav ? "Remove from favorites" : "Add to favorites";
+    if (isFav) favBtn.setAttribute("active", "");
+    else favBtn.removeAttribute("active");
+    favBtn.setAttribute("aria-pressed", isFav ? "true" : "false");
+    favBtn.setAttribute("aria-label", label);
+    favBtn.textContent = label;
   }
 
   #attachListeners() {
@@ -293,17 +302,12 @@ export class DetailView extends AbstractView {
 
         // Update icon-button state and slotted image to reflect new favorite state
         if (favBtn) {
-          const img = favBtn.querySelector("img");
-          const iconSrc = active
-            ? "/static/favorite.svg"
-            : "/static/favorite-white.svg";
+          const label = active ? "Remove from favorites" : "Add to favorites";
           if (active) favBtn.setAttribute("active", "");
           else favBtn.removeAttribute("active");
           favBtn.setAttribute("aria-pressed", active ? "true" : "false");
-          if (img) {
-            img.src = iconSrc;
-            img.alt = active ? "Remove from favorites" : "Add to favorites";
-          }
+          favBtn.setAttribute("aria-label", label);
+          favBtn.textContent = label;
         }
 
         // update header favorites count if present
