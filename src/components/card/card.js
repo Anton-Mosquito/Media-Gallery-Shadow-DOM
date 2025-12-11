@@ -5,6 +5,7 @@ import "../ui/icon-button/icon-button.js";
 const styles = `
   :host {
     display: block;
+    box-sizing: border-box;
   }
 
   .card {
@@ -13,6 +14,7 @@ const styles = `
     border-radius: 8px;
     overflow: hidden;
     height: 100%;
+    cursor: pointer;
   }
 
   .card__image {
@@ -112,11 +114,11 @@ export class CardComponent extends BaseComponent {
 
   set filmData(value) {
     this.#filmData = value;
-    this.#data.id = value.imdbID || "";
-    this.#data.title = value.Title || "";
-    this.#data.year = value.Year || "";
-    this.#data.type = value.Type || "";
-    this.#data.poster = value.Poster || "";
+    this.#data.imdbID = value.imdbID || "";
+    this.#data.Title = value.Title || "";
+    this.#data.Year = value.Year || "";
+    this.#data.Type = value.Type || "";
+    this.#data.Poster = value.Poster || "";
     this.#data.isFavorite = value.isFavorite || false;
     this.render();
   }
@@ -180,12 +182,12 @@ export class CardComponent extends BaseComponent {
     template.innerHTML = `
       <div class="card">
         <div class="card__image">
-          <img src="${this.#data.poster}" alt="Book cover" loading="lazy" />
+          <img src="${this.#data.Poster}" alt="Book cover" loading="lazy" />
         </div>
         <div class="card__info">
-          <div class="card__tag">${this.#data.year || "Unknown"}</div>
-          <div class="card__name">${this.#data.title || "Untitled"}</div>
-          <div class="card__author">${this.#data.type || "Unknown author"}</div>
+          <div class="card__tag">${this.#data.Year || "Unknown"}</div>
+          <div class="card__name">${this.#data.Title || "Untitled"}</div>
+          <div class="card__author">${this.#data.Type || "Unknown author"}</div>
           <div class="card__footer">
             <icon-button
               ${this.#data.isFavorite ? "active" : ""}
@@ -243,13 +245,7 @@ export class CardComponent extends BaseComponent {
     this.#updateFavoriteButton();
 
     this.emit("favorite-toggle", {
-      film: {
-        id: this.#data.id,
-        title: this.#data.title,
-        type: this.#data.type,
-        poster: this.#data.poster,
-        year: this.#data.year,
-      },
+      film: { ...this.#filmData },
       isFavorite: newState,
     });
   };
