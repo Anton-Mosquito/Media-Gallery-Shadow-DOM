@@ -4,6 +4,7 @@ const styles = `
   :host {
     display: block;
     width: 100%;
+    box-sizing: border-box;
   }
 
   :host([aria-busy="true"]) .card-grid { opacity: 0.6; pointer-events: none; }
@@ -83,6 +84,7 @@ export class CardListComponent extends BaseComponent {
 
   setCards(value) {
     this.#cards = value || [];
+    this.render();
   }
 
   #initShell() {
