@@ -20,7 +20,7 @@ export class MainView extends AbstractView {
   constructor(appState) {
     super();
     this.appState = appState;
-    this.appState = onChange(this.appState, this.appStateHook.bind(this));
+    this.appState = onChange(this.appState, this.#appStateHook);
 
     const initialState = {
       list: [],
@@ -29,7 +29,7 @@ export class MainView extends AbstractView {
       totalResults: 0,
     };
 
-    this.#state = onChange(initialState, this.#stateHook.bind(this));
+    this.#state = onChange(initialState, this.#stateHook);
     this.setTitle("Search films");
 
     this.#setupEventListeners();
@@ -57,11 +57,11 @@ export class MainView extends AbstractView {
     FavoritesService.toggle(this.appState, film, isFavorite);
   };
 
-  appStateHook(path) {
+  #appStateHook = (path) => {
     if (path !== "favorites") return;
 
     this.#updateHeader();
-  }
+  };
 
   async #retrieveFilms() {
     this.#setAttributeOnElement(this.#elements.cardList, "loading", true);
@@ -82,7 +82,7 @@ export class MainView extends AbstractView {
     }
   }
 
-  #stateHook(path) {
+  #stateHook = (path) => {
     if (path === "searchQuery") {
       this.#retrieveFilms();
     }
@@ -91,7 +91,7 @@ export class MainView extends AbstractView {
       this.#updateResultsCount();
       this.#updateCardList();
     }
-  }
+  };
 
   render() {
     const main = document.createElement("main");
