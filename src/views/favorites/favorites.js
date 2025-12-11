@@ -17,72 +17,79 @@ export class FavoritesView extends AbstractView {
   constructor(appState) {
     super();
     this.appState = appState;
-    this.appState = onChange(this.appState, this.appStateHook.bind(this));
+    this.appState = onChange(this.appState, this.#appStateHook);
     this.setTitle("My Favorites books");
 
-    this.setupEventListeners();
+    this.#setupEventListeners();
   }
 
-  setupEventListeners() {
-    eventBus.on("favorite-toggle", this.handleFavoriteToggle.bind(this));
+  #setupEventListeners() {
+    eventBus.on("favorite-toggle", this.#handleFavoriteToggle);
   }
 
-  handleFavoriteToggle({ film, isFavorite }) {
-    if (!isFavorite) {
-      FavoritesService.remove(this.appState, film);
-    }
-  }
+  #handleFavoriteToggle = ({ film, isFavorite }) => {
+    if (isFavorite) return;
+
+    FavoritesService.remove(this.appState, film);
+  };
 
   destroy() {
     onChange.unsubscribe(this.appState);
-    eventBus.off("favorite-toggle", this.handleFavoriteToggle.bind(this));
+    eventBus.off("favorite-toggle", this.#handleFavoriteToggle);
   }
 
-  appStateHook(path) {
-    if (path === "favorites") {
-      this.updateCardList();
-      this.updateHeader();
-    }
-  }
+  #appStateHook = (path) => {
+    if (path !== "favorites") return;
+
+    this.#updateCardList();
+    this.#updateHeader();
+  };
 
   render() {
-    const main = document.createElement("div");
+    const main = document.createElement("main");
 
     const title = document.createElement("h1");
     title.textContent = "Favorites";
     main.appendChild(title);
 
     this.#elements.cardList = document.createElement("card-list-component");
-    this.#elements.cardList.id = "favorites-list";
     main.appendChild(this.#elements.cardList);
 
     this.app.innerHTML = "";
     this.app.appendChild(main);
 
-    this.renderHeader();
-    this.updateCardList();
+    this.#renderHeader();
+    this.#updateCardList();
   }
 
-  renderHeader() {
+  #renderHeader() {
     this.#elements.header = document.createElement("header-component");
-    this.#elements.header.id = "favorites-header";
-    this.#elements.header.favoritesCount = this.appState.favorites.length;
+
+    this.#elements.header.setAttribute(
+      "favorites-count",
+      String(this.appState.favorites.length)
+    );
+
     this.app.prepend(this.#elements.header);
   }
 
-  updateHeader() {
-    if (this.#elements.header) {
-      this.#elements.header.favoritesCount = this.appState.favorites.length;
-    }
+  #updateHeader() {
+    if (!this.#elements.header) return;
+
+    this.#elements.header.setAttribute(
+      "favorites-count",
+      String(this.appState.favorites.length)
+    );
   }
 
-  updateCardList() {
-    if (this.#elements.cardList) {
-      const favoritesWithFlag = this.appState.favorites.map((book) => ({
-        ...book,
-        isFavorite: true,
-      }));
-      this.#elements.cardList.setCards(favoritesWithFlag);
-    }
+  #updateCardList() {
+    if (!this.#elements.cardList) return;
+
+    const favoritesWithFlag = this.appState.favorites.map((film) => ({
+      ...film,
+      isFavorite: true,
+    }));
+
+    this.#elements.cardList.setCards(favoritesWithFlag);
   }
 }
