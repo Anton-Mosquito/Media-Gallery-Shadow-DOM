@@ -50,11 +50,7 @@ export class MainView extends AbstractView {
   }
 
   #handleSearch = ({ query }) => {
-    console.trace("🚀 ~ MainView ~ query:", query);
-    // If the incoming query equals current, still trigger a fresh fetch
     if (query === this.#state.searchQuery) {
-      this.#state.page = 1;
-      this.#state.list = [];
       this.#retrieveFilms();
       return;
     }
