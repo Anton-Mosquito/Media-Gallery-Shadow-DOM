@@ -8,6 +8,7 @@ import "../../components/header/header.js";
 import "../../components/search/search.js";
 import "../../components/card-list/card-list.js";
 import "../../components/card/card.js";
+import "../../components/ui/pagination/pagination.js";
 
 export class MainView extends AbstractView {
   #state = null;
@@ -15,6 +16,7 @@ export class MainView extends AbstractView {
     header: null,
     resultsHeader: null,
     cardList: null,
+    pagination: null,
   };
 
   constructor(appState) {
@@ -39,6 +41,7 @@ export class MainView extends AbstractView {
     eventBus.on("search", this.#handleSearch);
     eventBus.on("favorite-toggle", this.#handleFavoriteToggle);
     eventBus.on("open-film", this.#handleOpenFilm);
+    eventBus.on("page-change", this.#handlePageChange);
   }
 
   destroy() {
@@ -47,6 +50,7 @@ export class MainView extends AbstractView {
     eventBus.off("search", this.#handleSearch);
     eventBus.off("favorite-toggle", this.#handleFavoriteToggle);
     eventBus.off("open-film", this.#handleOpenFilm);
+    eventBus.off("page-change", this.#handlePageChange);
   }
 
   #handleSearch = ({ query }) => {
@@ -68,6 +72,12 @@ export class MainView extends AbstractView {
     if (!imdbID) return;
     this.appState.selectedFilmId = imdbID;
     window.location.hash = "#detail";
+  };
+
+  #handlePageChange = ({ page }) => {
+    if (page === this.#state.page) return;
+    this.#state.page = page;
+    this.#state.list = [];
   };
 
   #appStateHook = (path) => {
@@ -96,7 +106,7 @@ export class MainView extends AbstractView {
   }
 
   #stateHook = (path) => {
-    if (path === "searchQuery") {
+    if (path === "searchQuery" || path === "page") {
       this.#retrieveFilms();
     }
 
@@ -104,10 +114,15 @@ export class MainView extends AbstractView {
       this.#updateResultsCount();
       this.#updateCardList();
     }
+
+    if (path === "totalResults" || path === "page") {
+      this.#updatePagination();
+    }
   };
 
   render() {
     const main = document.createElement("main");
+    main.classList.add("main-view");
 
     this.#elements.resultsHeader = document.createElement("h1");
     this.#elements.resultsHeader.textContent = this.#state.totalResults
@@ -132,11 +147,18 @@ export class MainView extends AbstractView {
     );
     main.appendChild(this.#elements.cardList);
 
+    this.#elements.pagination = document.createElement("pagination-component");
+    this.#elements.pagination.addEventListener("page-change", (e) => {
+      this.#handlePageChange(e.detail);
+    });
+    main.appendChild(this.#elements.pagination);
+
     this.app.innerHTML = "";
     this.app.appendChild(main);
 
     this.#renderHeader();
     this.#updateCardList();
+    this.#updatePagination();
   }
 
   #renderHeader() {
@@ -174,6 +196,26 @@ export class MainView extends AbstractView {
     }));
 
     this.#elements.cardList.setCards(filmsWithFavorites);
+  }
+
+  #updatePagination() {
+    if (!this.#elements.pagination) return;
+
+    const totalPages = Math.ceil(this.#state.totalResults / 10);
+
+    this.#setAttributeOnElement(
+      this.#elements.pagination,
+      "current-page",
+      this.#state.page
+    );
+    this.#setAttributeOnElement(
+      this.#elements.pagination,
+      "total-pages",
+      totalPages
+    );
+
+    this.#elements.pagination.style.display =
+      totalPages <= 1 ? "none" : "block";
   }
 
   #setAttributeOnElement(element, attrName, value) {

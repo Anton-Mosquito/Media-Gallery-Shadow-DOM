@@ -13,7 +13,6 @@ const styles = `
   }
 
   .card-list__empty {
-    display: block;
     text-align: center;
     padding: 40px 20px;
     color: var(--card-list-empty, #666);
@@ -93,7 +92,7 @@ export class CardListComponent extends BaseComponent {
 
     const template = document.createElement("template");
     template.innerHTML = `
-      <loader-component class="card-list__loader" hidden></loader-component>
+      <loader-component big class="card-list__loader" hidden></loader-component>
       <div class="card-grid" id="card-grid" role="list"></div>
       <div class="card-list__empty" id="empty-state" hidden>
         <slot name="empty">No films found</slot>
