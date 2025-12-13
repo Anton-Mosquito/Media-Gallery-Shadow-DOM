@@ -1,20 +1,6 @@
 import { BaseComponent } from "../../common/base-component.js";
+import { FILM_DETAIL_CONSTANTS } from "../../common/constants.js";
 import "../detail-row/detail-row.js";
-
-const CONSTANTS = {
-  PLACEHOLDER: {
-    IMAGE: "/static/placeholder.png",
-    TEXT: "-",
-    LOADING: "Loading...",
-    TITLE: "Untitled",
-    EMPTY: "&nbsp;",
-  },
-  NO_DATA: "N/A",
-  LABELS: {
-    ADD_TO_FAVORITES: "Add to favorites",
-    REMOVE_FROM_FAVORITES: "Remove from favorites",
-  },
-};
 
 const styles = `
 :host {
@@ -140,7 +126,7 @@ export class FilmDetailsInfo extends BaseComponent {
     poster.className = "poster";
     const img = document.createElement("img");
     img.id = "poster-img";
-    img.src = CONSTANTS.PLACEHOLDER.IMAGE;
+    img.src = FILM_DETAIL_CONSTANTS.PLACEHOLDER.IMAGE;
     img.alt = "Poster";
     poster.appendChild(img);
 
@@ -151,7 +137,7 @@ export class FilmDetailsInfo extends BaseComponent {
     const title = document.createElement("h1");
     title.className = "title";
     title.id = "film-title";
-    title.textContent = CONSTANTS.PLACEHOLDER.LOADING;
+    title.textContent = FILM_DETAIL_CONSTANTS.PLACEHOLDER.LOADING;
 
     const detailsList = document.createElement("div");
     detailsList.className = "details-list";
@@ -174,8 +160,11 @@ export class FilmDetailsInfo extends BaseComponent {
     });
 
     const button = document.createElement("icon-button");
-    button.setAttribute("aria-label", CONSTANTS.LABELS.ADD_TO_FAVORITES);
-    button.textContent = CONSTANTS.LABELS.ADD_TO_FAVORITES;
+    button.setAttribute(
+      "aria-label",
+      FILM_DETAIL_CONSTANTS.LABELS.ADD_TO_FAVORITES
+    );
+    button.textContent = FILM_DETAIL_CONSTANTS.LABELS.ADD_TO_FAVORITES;
 
     content.append(title, detailsList, button);
     container.append(poster, content);
@@ -259,8 +248,8 @@ export class FilmDetailsInfo extends BaseComponent {
     if (!btn) return;
 
     const label = isFav
-      ? CONSTANTS.LABELS.REMOVE_FROM_FAVORITES
-      : CONSTANTS.LABELS.ADD_TO_FAVORITES;
+      ? FILM_DETAIL_CONSTANTS.LABELS.REMOVE_FROM_FAVORITES
+      : FILM_DETAIL_CONSTANTS.LABELS.ADD_TO_FAVORITES;
 
     if (isFav) {
       btn.setAttribute("active", "");
@@ -315,33 +304,41 @@ export class FilmDetailsInfo extends BaseComponent {
     return {
       posterUrl: this.#getValidValue(
         details.Poster,
-        CONSTANTS.PLACEHOLDER.IMAGE
+        FILM_DETAIL_CONSTANTS.PLACEHOLDER.IMAGE
       ),
-      title: details.Title || CONSTANTS.PLACEHOLDER.TITLE,
+      title: details.Title || FILM_DETAIL_CONSTANTS.PLACEHOLDER.TITLE,
       writer: this.#getValidValue(details.Writer),
-      genre: details.Genre || CONSTANTS.PLACEHOLDER.TEXT,
+      genre: details.Genre || FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT,
       actors: this.#getValidValue(details.Actors),
-      year: details.Released || CONSTANTS.PLACEHOLDER.TEXT,
-      runtime: details.Runtime || CONSTANTS.PLACEHOLDER.TEXT,
-      director: details.Director || CONSTANTS.PLACEHOLDER.TEXT,
+      year: details.Released || FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT,
+      runtime: details.Runtime || FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT,
+      director: details.Director || FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT,
       plot: details.Plot || "",
       rating: this.#buildRating(details),
       tags: details.Genre || [],
     };
   }
 
-  #getValidValue(value, placeholder = CONSTANTS.PLACEHOLDER.TEXT) {
-    return value && value !== CONSTANTS.NO_DATA ? value : placeholder;
+  #getValidValue(value, placeholder = FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT) {
+    return value && value !== FILM_DETAIL_CONSTANTS.NO_DATA
+      ? value
+      : placeholder;
   }
 
   #buildRating(details) {
     const ratingParts = [];
 
-    if (details.imdbRating && details.imdbRating !== CONSTANTS.NO_DATA) {
+    if (
+      details.imdbRating &&
+      details.imdbRating !== FILM_DETAIL_CONSTANTS.NO_DATA
+    ) {
       ratingParts.push(`${details.imdbRating}/10`);
     }
 
-    if (details.Metascore && details.Metascore !== CONSTANTS.NO_DATA) {
+    if (
+      details.Metascore &&
+      details.Metascore !== FILM_DETAIL_CONSTANTS.NO_DATA
+    ) {
       ratingParts.push(`${details.Metascore} Metascore`);
     }
 
@@ -356,7 +353,7 @@ export class FilmDetailsInfo extends BaseComponent {
 
     return ratingParts.length > 0
       ? ratingParts.join(" • ")
-      : CONSTANTS.PLACEHOLDER.TEXT;
+      : FILM_DETAIL_CONSTANTS.PLACEHOLDER.TEXT;
   }
 }
 

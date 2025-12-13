@@ -1,6 +1,7 @@
 import { AbstractView } from "../../common/view";
 import onChange from "on-change";
 import { eventBus } from "../../common/event-bus";
+import { EVENTS } from "../../common/constants.js";
 import { filmService } from "../../common/film-service.js";
 import { FavoritesService } from "../../common/favorites-service";
 
@@ -38,19 +39,19 @@ export class MainView extends AbstractView {
   }
 
   #setupEventListeners() {
-    eventBus.on("search", this.#handleSearch);
-    eventBus.on("favorite-toggle", this.#handleFavoriteToggle);
-    eventBus.on("open-film", this.#handleOpenFilm);
-    eventBus.on("page-change", this.#handlePageChange);
+    eventBus.on(EVENTS.SEARCH, this.#handleSearch);
+    eventBus.on(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
+    eventBus.on(EVENTS.OPEN_FILM, this.#handleOpenFilm);
+    eventBus.on(EVENTS.PAGE_CHANGE, this.#handlePageChange);
   }
 
   destroy() {
     onChange.unsubscribe(this.appState);
     onChange.unsubscribe(this.#state);
-    eventBus.off("search", this.#handleSearch);
-    eventBus.off("favorite-toggle", this.#handleFavoriteToggle);
-    eventBus.off("open-film", this.#handleOpenFilm);
-    eventBus.off("page-change", this.#handlePageChange);
+    eventBus.off(EVENTS.SEARCH, this.#handleSearch);
+    eventBus.off(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
+    eventBus.off(EVENTS.OPEN_FILM, this.#handleOpenFilm);
+    eventBus.off(EVENTS.PAGE_CHANGE, this.#handlePageChange);
   }
 
   #handleSearch = ({ query }) => {

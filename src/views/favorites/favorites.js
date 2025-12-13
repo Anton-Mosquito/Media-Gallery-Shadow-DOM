@@ -2,6 +2,7 @@
 import { AbstractView } from "../../common/view.js";
 import onChange from "on-change";
 import { eventBus } from "../../common/event-bus.js";
+import { EVENTS } from "../../common/constants.js";
 import { FavoritesService } from "../../common/favorites-service.js";
 
 import "../../components/header/header.js";
@@ -24,7 +25,7 @@ export class FavoritesView extends AbstractView {
   }
 
   #setupEventListeners() {
-    eventBus.on("favorite-toggle", this.#handleFavoriteToggle);
+    eventBus.on(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
   }
 
   #handleFavoriteToggle = ({ film, isFavorite }) => {
@@ -35,7 +36,7 @@ export class FavoritesView extends AbstractView {
 
   destroy() {
     onChange.unsubscribe(this.appState);
-    eventBus.off("favorite-toggle", this.#handleFavoriteToggle);
+    eventBus.off(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
   }
 
   #appStateHook = (path) => {
