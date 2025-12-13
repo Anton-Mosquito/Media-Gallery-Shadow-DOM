@@ -131,7 +131,7 @@ export class SearchInput extends HTMLElement {
 
     if (!input) return;
 
-    input.addEventListener("input", this.#onInternalInput);
+    input.addEventListener("change", this.#onInternalInput);
     input.addEventListener("keydown", this.#onInternalKeydown);
   }
 
@@ -140,7 +140,7 @@ export class SearchInput extends HTMLElement {
 
     if (!input) return;
 
-    input.removeEventListener("input", this.#onInternalInput);
+    input.removeEventListener("change", this.#onInternalInput);
     input.removeEventListener("keydown", this.#onInternalKeydown);
 
     if (
@@ -152,13 +152,15 @@ export class SearchInput extends HTMLElement {
   }
 
   #onInternalInput = (e) => {
-    const query = e.target.value;
+    const query = e.target.value.trim();
     this.#debouncedOnInput(query);
   };
 
   #onInternalKeydown = (e) => {
-    if (e.code !== "Enter") return;
+    if (e.key !== "Enter" && e.code !== "Enter" && e.code !== "NumpadEnter")
+      return;
 
+    e.preventDefault();
     const query = e.target.value.trim();
 
     this.dispatchEvent(
@@ -175,6 +177,15 @@ export class SearchInput extends HTMLElement {
     if (!input) return;
 
     input.focus();
+  }
+
+  cancelPending() {
+    if (
+      this.#debouncedOnInput &&
+      typeof this.#debouncedOnInput.cancel === "function"
+    ) {
+      this.#debouncedOnInput.cancel();
+    }
   }
 
   #createStyle(css) {

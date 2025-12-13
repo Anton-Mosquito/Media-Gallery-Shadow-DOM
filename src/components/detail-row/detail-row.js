@@ -1,6 +1,7 @@
 const template = document.createElement("template");
-template.innerHTML = `
-  <style>
+
+const style = document.createElement("style");
+style.textContent = `
     :host([description]), :host([tags]) {
       display: flex;
       flex-direction: column;
@@ -45,10 +46,15 @@ template.innerHTML = `
       content: var(--detail-row-empty-text, '—');
       color: var(--detail-row-empty-color, #999);
     }
-  </style>
-  <div class="label"></div>
-  <div class="value"></div>
 `;
+
+const label = document.createElement("div");
+label.className = "label";
+
+const value = document.createElement("div");
+value.className = "value";
+
+template.content.append(style, label, value);
 
 export class DetailRow extends HTMLElement {
   #root;

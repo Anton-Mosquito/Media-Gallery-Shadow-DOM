@@ -114,6 +114,11 @@ export class SearchComponent extends BaseComponent {
 
   #handleClick = () => {
     const inputComp = this._root.querySelector("search-input");
+    // Cancel any pending debounced input on the search input to avoid duplicate events
+    if (inputComp && typeof inputComp.cancelPending === "function") {
+      inputComp.cancelPending();
+    }
+
     const query = inputComp ? (inputComp.value || "").trim() : "";
     this.emit("search", { query });
   };
