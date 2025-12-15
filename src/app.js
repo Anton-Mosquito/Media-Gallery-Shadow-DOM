@@ -1,10 +1,24 @@
-"use strict";
+import { MainView } from "./views/main/main";
 
-import "./styles/app.css";
+class App {
+  routes = [{ path: "/", view: MainView }];
 
-// Minimal runtime usage so Rollup generates a non-empty chunk
-export function a(params) {
-  return params;
+  constructor() {
+    window.addEventListener("hashchange", this.route.bind(this));
+    this.route();
+  }
+
+  route() {
+    if (this.currentView) {
+      this.currentView.destroy();
+    }
+    const view =
+      this.routes.find((r) => r.path === window.location.hash) ||
+      this.routes[0];
+    this.currentView = new view.view();
+    this.currentView.render();
+  }
 }
 
-console.log("App is running");
+new App();
+export default App;
