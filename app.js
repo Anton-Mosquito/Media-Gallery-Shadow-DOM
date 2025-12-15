@@ -1697,7 +1697,7 @@ const ICONS = {
  * UI Placeholders and common text
  */
 const PLACEHOLDERS = {
-  IMAGE: "/static/placeholder.png",
+  IMAGE: "./static/placeholder.png",
   TEXT: "-",
   LOADING: "Loading...",
   TITLE: "Untitled"};
@@ -3442,5 +3442,5 @@ class App {
 new App();
 
 export { App as default };
-//# debugId=ac51b1c0-0a8a-4668-af46-8ba72cf18706
+//# debugId=441402bc-3f34-4441-a0b3-0fb7e4eeffcb
 //# sourceMappingURL=app.js.map
