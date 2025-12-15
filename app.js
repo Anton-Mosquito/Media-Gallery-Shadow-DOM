@@ -1870,7 +1870,7 @@ class HeaderComponent extends BaseComponent {
     this._root.appendChild(this.adoptGlobalStyles());
     this._root.appendChild(this.createStyle(styles$8));
     const template = document.createElement("template");
-    template.innerHTML = "\n      <div class=\"header\">\n        <div class=\"logo\">\n          <slot name=\"logo\">\n            <img src=\"/static/cinema.svg\" alt=\"Logo\" />\n          </slot>\n        </div>\n        <div class=\"menu\">\n          <a class=\"menu__item\" href=\"#\" data-nav=\"search\">\n            <img src=\"/static/search.svg\" alt=\"Search icon\" />\n            <span>Search books</span>\n          </a>\n          <a class=\"menu__item\" href=\"#favorites\" data-nav=\"favorites\">\n            <img src=\"/static/favorite.svg\" alt=\"Favorites icon\" />\n            <span>Favorites</span>\n            <div class=\"menu__counter\">".concat(this.favoritesCount, "</div>\n          </a>\n          <slot name=\"extra-menu\"></slot>\n        </div>\n      </div>\n    ");
+    template.innerHTML = "\n      <div class=\"header\">\n        <div class=\"logo\">\n          <slot name=\"logo\">\n            <img src=\"./static/cinema.svg\" alt=\"Logo\" />\n          </slot>\n        </div>\n        <div class=\"menu\">\n          <a class=\"menu__item\" href=\"#\" data-nav=\"search\">\n            <img src=\"./static/search.svg\" alt=\"Search icon\" />\n            <span>Search books</span>\n          </a>\n          <a class=\"menu__item\" href=\"#favorites\" data-nav=\"favorites\">\n            <img src=\"./static/favorite.svg\" alt=\"Favorites icon\" />\n            <span>Favorites</span>\n            <div class=\"menu__counter\">".concat(this.favoritesCount, "</div>\n          </a>\n          <slot name=\"extra-menu\"></slot>\n        </div>\n      </div>\n    ");
     this._root.appendChild(template.content.cloneNode(true));
   }
 }
@@ -2269,7 +2269,7 @@ class SearchComponent extends BaseComponent {
     this._root.appendChild(this.adoptGlobalStyles());
     this._root.appendChild(this.createStyle(styles$5));
     const template = document.createElement("template");
-    template.innerHTML = "\n      <div class=\"search\">\n        <search-input\n          value=\"".concat(this.getAttribute("query") || "", "\"\n          placeholder=\"").concat(this.getAttribute("placeholder") || "Find a book or author....", "\"\n        >\n          <img slot=\"icon\" src=\"/static/search.svg\" alt=\"Search icon\" />\n        </search-input>\n        <icon-button class=\"search__button\" aria-label=\"Search\">\n          <img src=\"/static/search-white.svg\" alt=\"Search icon\" />\n        </icon-button>\n      </div>\n    ");
+    template.innerHTML = "\n      <div class=\"search\">\n        <search-input\n          value=\"".concat(this.getAttribute("query") || "", "\"\n          placeholder=\"").concat(this.getAttribute("placeholder") || "Find a book or author....", "\"\n        >\n          <img slot=\"icon\" src=\"./static/search.svg\" alt=\"Search icon\" />\n        </search-input>\n        <icon-button class=\"search__button\" aria-label=\"Search\">\n          <img src=\"./static/search-white.svg\" alt=\"Search icon\" />\n        </icon-button>\n      </div>\n    ");
     this._root.appendChild(template.content.cloneNode(true));
   }
   attachEventListeners() {
@@ -2523,7 +2523,7 @@ function _updateFavoriteButton() {
   const button = this._root.querySelector("icon-button");
   if (!button) return;
   const ariaLabel = _classPrivateFieldGet2(_data, this).isFavorite ? "Remove from favorites" : "Add to favorites";
-  const iconSrc = _classPrivateFieldGet2(_data, this).isFavorite ? "/static/favorite.svg" : "/static/favorite-white.svg";
+  const iconSrc = _classPrivateFieldGet2(_data, this).isFavorite ? "./static/favorite.svg" : "./static/favorite-white.svg";
   if (_classPrivateFieldGet2(_data, this).isFavorite) button.setAttribute("active", "");else button.removeAttribute("active");
   button.setAttribute("aria-label", ariaLabel);
   button.setAttribute("aria-pressed", _classPrivateFieldGet2(_data, this).isFavorite ? "true" : "false");
@@ -2541,7 +2541,7 @@ function _attachEventListeners$1() {
   const img = this._root.querySelector(".card__image img");
   if (!img) return;
   img.addEventListener("error", () => {
-    img.src = "/static/placeholder.png";
+    img.src = "./static/placeholder.png";
   }, {
     once: true
   });
@@ -3442,5 +3442,5 @@ class App {
 new App();
 
 export { App as default };
-//# debugId=4f117b95-da37-474d-822e-e972474cf07e
+//# debugId=2eb579cf-f0db-494b-8c64-d42b97209513
 //# sourceMappingURL=app.js.map
