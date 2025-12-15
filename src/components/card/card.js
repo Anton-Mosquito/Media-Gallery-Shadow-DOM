@@ -240,7 +240,9 @@ export class CardComponent extends BaseComponent {
     );
   }
 
-  #handleFavoriteToggle = () => {
+  #handleFavoriteToggle = (e) => {
+    e.stopPropagation();
+
     const newState = !this.#data.isFavorite;
 
     this.#data.isFavorite = newState;

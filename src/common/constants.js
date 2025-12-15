@@ -1,5 +1,3 @@
-// src/common/constants.js
-
 /**
  * Application-wide event names
  * Централізоване сховище подій для EventBus

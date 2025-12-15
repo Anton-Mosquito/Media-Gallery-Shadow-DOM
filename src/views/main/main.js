@@ -1,6 +1,4 @@
 import { AbstractView } from "../../common/view";
-import onChange from "on-change";
-import { eventBus } from "../../common/event-bus";
 import { EVENTS } from "../../common/constants.js";
 import { filmService } from "../../common/film-service.js";
 import { FavoritesService } from "../../common/favorites-service";
@@ -21,37 +19,24 @@ export class MainView extends AbstractView {
   };
 
   constructor(appState) {
-    super();
-    this.appState = appState;
-    this.appState = onChange(this.appState, this.#appStateHook);
+    super(appState);
 
-    const initialState = {
-      list: [],
-      searchQuery: undefined,
-      page: 1,
-      totalResults: 0,
-    };
+    this.#state = this.initLocalState(
+      {
+        list: [],
+        searchQuery: undefined,
+        page: 1,
+        totalResults: 0,
+      },
+      this.#stateHook
+    );
 
-    this.#state = onChange(initialState, this.#stateHook);
     this.setTitle("Search films");
 
-    this.#setupEventListeners();
-  }
-
-  #setupEventListeners() {
-    eventBus.on(EVENTS.SEARCH, this.#handleSearch);
-    eventBus.on(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
-    eventBus.on(EVENTS.OPEN_FILM, this.#handleOpenFilm);
-    eventBus.on(EVENTS.PAGE_CHANGE, this.#handlePageChange);
-  }
-
-  destroy() {
-    onChange.unsubscribe(this.appState);
-    onChange.unsubscribe(this.#state);
-    eventBus.off(EVENTS.SEARCH, this.#handleSearch);
-    eventBus.off(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
-    eventBus.off(EVENTS.OPEN_FILM, this.#handleOpenFilm);
-    eventBus.off(EVENTS.PAGE_CHANGE, this.#handlePageChange);
+    this.subscribe(EVENTS.SEARCH, this.#handleSearch);
+    this.subscribe(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
+    this.subscribe(EVENTS.OPEN_FILM, this.#handleOpenFilm);
+    this.subscribe(EVENTS.PAGE_CHANGE, this.#handlePageChange);
   }
 
   #handleSearch = ({ query }) => {
@@ -81,14 +66,8 @@ export class MainView extends AbstractView {
     this.#state.list = [];
   };
 
-  #appStateHook = (path) => {
-    if (path !== "favorites") return;
-
-    this.#updateHeader();
-  };
-
   async #retrieveFilms() {
-    this.#setAttributeOnElement(this.#elements.cardList, "loading", true);
+    this.setAttribute(this.#elements.cardList, "loading", true);
 
     try {
       const data = await filmService.searchFilms(
@@ -102,7 +81,7 @@ export class MainView extends AbstractView {
     } catch (error) {
       console.error("Error loading books:", error);
     } finally {
-      this.#setAttributeOnElement(this.#elements.cardList, "loading", false);
+      this.setAttribute(this.#elements.cardList, "loading", false);
     }
   }
 
@@ -133,19 +112,11 @@ export class MainView extends AbstractView {
     main.appendChild(this.#elements.resultsHeader);
 
     const searchComponent = document.createElement("search-component");
-    this.#setAttributeOnElement(
-      searchComponent,
-      "query",
-      this.#state.searchQuery || ""
-    );
+    this.setAttribute(searchComponent, "query", this.#state.searchQuery || "");
     main.appendChild(searchComponent);
 
     this.#elements.cardList = document.createElement("card-list-component");
-    this.#setAttributeOnElement(
-      this.#elements.cardList,
-      "loading",
-      this.#state.loading
-    );
+    this.setAttribute(this.#elements.cardList, "loading", this.#state.loading);
     main.appendChild(this.#elements.cardList);
 
     this.#elements.pagination = document.createElement("pagination-component");
@@ -154,30 +125,10 @@ export class MainView extends AbstractView {
     });
     main.appendChild(this.#elements.pagination);
 
-    this.app.innerHTML = "";
-    this.app.appendChild(main);
+    this.renderWithHeader(main);
 
-    this.#renderHeader();
     this.#updateCardList();
     this.#updatePagination();
-  }
-
-  #renderHeader() {
-    this.#elements.header = document.createElement("header-component");
-
-    this.#updateHeader();
-
-    this.app.prepend(this.#elements.header);
-  }
-
-  #updateHeader() {
-    if (!this.#elements.header) return;
-
-    this.#setAttributeOnElement(
-      this.#elements.header,
-      "favorites-count",
-      this.appState.favorites.length
-    );
   }
 
   #updateResultsCount() {
@@ -204,24 +155,14 @@ export class MainView extends AbstractView {
 
     const totalPages = Math.ceil(this.#state.totalResults / 10);
 
-    this.#setAttributeOnElement(
+    this.setAttribute(
       this.#elements.pagination,
       "current-page",
       this.#state.page
     );
-    this.#setAttributeOnElement(
-      this.#elements.pagination,
-      "total-pages",
-      totalPages
-    );
+    this.setAttribute(this.#elements.pagination, "total-pages", totalPages);
 
     this.#elements.pagination.style.display =
       totalPages <= 1 ? "none" : "block";
-  }
-
-  #setAttributeOnElement(element, attrName, value) {
-    if (!element) return;
-
-    element.setAttribute(attrName, String(value));
   }
 }

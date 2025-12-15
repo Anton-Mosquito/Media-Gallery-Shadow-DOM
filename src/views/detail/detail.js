@@ -1,75 +1,71 @@
 import { AbstractView } from "../../common/view";
 import { filmService } from "../../common/film-service.js";
-import { eventBus } from "../../common/event-bus";
 import { EVENTS } from "../../common/constants.js";
 import { FavoritesService } from "../../common/favorites-service";
-import onChange from "on-change";
 import "../../components/header/header.js";
 import "../../components/ui/loader/loader.js";
 import "../../components/film-detail/film-details.js";
 
 export class DetailView extends AbstractView {
   #elements = {
-    header: null,
     detailsInfo: null,
     loader: null,
   };
 
   constructor(appState) {
-    super();
-    this.appState = onChange(appState, this.#appStateHook);
+    super(appState);
     this.setTitle("Film details");
-    this.#setupEventListeners();
-  }
-
-  destroy() {
-    onChange.unsubscribe(this.appState);
-    eventBus.off(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
+    this.subscribe(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
   }
 
   async render() {
-    const favoritesCount = this.appState.favorites.length;
+    const main = document.createElement("main");
+    main.classList.add("detail-view");
 
-    this.app.innerHTML = `
-      <header-component favorites-count="${favoritesCount}"></header-component>
-      <main class="detail-view">
-        <style>
-          .detail-view {
-            display: block;
-            box-sizing: border-box;
-            padding: 30px 20px;
-            background: var(--page-bg, #fff);
-            color: var(--text-color, #111);
-          }
-          .detail {
-            max-width: 1100px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-          }
-          [data-page-loader] {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(255,255,255,0.75);
-            z-index: 9999;
-          }
-        </style>
-        <div class="detail">
-          <film-details></film-details>
-        </div>
-      </main>
-      <div data-page-loader>
-        <loader-component big></loader-component>
-      </div>
+    const style = document.createElement("style");
+    style.textContent = `
+      .detail-view {
+        display: block;
+        box-sizing: border-box;
+        padding: 30px 20px;
+        background: var(--page-bg, #fff);
+        color: var(--text-color, #111);
+      }
+      .detail {
+        max-width: 1100px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      [data-page-loader] {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255,255,255,0.75);
+        z-index: 9999;
+      }
     `;
+    main.appendChild(style);
 
-    this.#elements.header = this.app.querySelector("header-component");
-    this.#elements.detailsInfo = this.app.querySelector("film-details");
-    this.#elements.loader = this.app.querySelector("[data-page-loader]");
+    const detailContainer = document.createElement("div");
+    detailContainer.classList.add("detail");
+
+    this.#elements.detailsInfo = document.createElement("film-details");
+    detailContainer.appendChild(this.#elements.detailsInfo);
+
+    main.appendChild(detailContainer);
+
+    this.#elements.loader = document.createElement("div");
+    this.#elements.loader.setAttribute("data-page-loader", "");
+    const loaderComponent = document.createElement("loader-component");
+    loaderComponent.setAttribute("big", "");
+    this.#elements.loader.appendChild(loaderComponent);
+    main.appendChild(this.#elements.loader);
+
+    this.renderWithHeader(main);
 
     const imdbID = this.appState.selectedFilmId;
     if (!imdbID) {
@@ -99,27 +95,15 @@ export class DetailView extends AbstractView {
     this.#elements.detailsInfo.setDetails({ details, isFavorite });
   }
 
-  #setupEventListeners() {
-    eventBus.on(EVENTS.FAVORITE_TOGGLE, this.#handleFavoriteToggle);
-  }
-
   #handleFavoriteToggle = ({ film, isFavorite }) => {
     FavoritesService.toggle(this.appState, film, isFavorite);
   };
 
-  #appStateHook = (path) => {
-    if (path === "favorites") {
-      this.#updateHeader();
-      this.#updateButtonState();
-    }
-  };
+  onAppStateChange(path) {
+    super.onAppStateChange(path);
 
-  #updateHeader() {
-    if (this.#elements.header) {
-      this.#elements.header.setAttribute(
-        "favorites-count",
-        String(this.appState.favorites.length)
-      );
+    if (path === "favorites") {
+      this.#updateButtonState();
     }
   }
 

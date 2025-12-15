@@ -43,6 +43,7 @@ const styles = `
 
 export class SearchInput extends HTMLElement {
   #debouncedOnInput = null;
+  #lastEmittedValue = "";
 
   static get observedAttributes() {
     return ["value", "placeholder"];
@@ -153,6 +154,13 @@ export class SearchInput extends HTMLElement {
 
   #onInternalInput = (e) => {
     const query = e.target.value.trim();
+
+    if (query === this.#lastEmittedValue) {
+      return;
+    }
+
+    this.#lastEmittedValue = query;
+
     this.#debouncedOnInput(query);
   };
 
@@ -162,6 +170,8 @@ export class SearchInput extends HTMLElement {
 
     e.preventDefault();
     const query = e.target.value.trim();
+
+    this.#lastEmittedValue = query;
 
     this.dispatchEvent(
       new CustomEvent("search", {
