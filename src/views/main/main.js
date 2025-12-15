@@ -1,5 +1,8 @@
 import { AbstractView } from "../../common/view";
 import onChange from "on-change";
+import { Header } from "../../components/header/header";
+import { Search } from "../../components/search/search";
+import { CardList } from "../../components/card-list/card-list";
 
 export class MainView extends AbstractView {
   state = {
@@ -12,27 +15,70 @@ export class MainView extends AbstractView {
     super();
     this.appState = appState;
     this.appState = onChange(this.appState, this.appStateHook.bind(this));
+    this.state = onChange(this.state, this.stateHook.bind(this));
     this.setTitle("Search books");
   }
 
+  destroy() {
+    onChange.unsubscribe(this.appState);
+    onChange.unsubscribe(this.state);
+  }
+
   appStateHook(path, value) {
+    console.log("🚀 ~ MainView ~ appStateHook ~ value:", value);
     if (path === "favorites") {
-      console.log(value);
+      this.render();
+    }
+  }
+
+  async loadList(query, offset = 0) {
+    // const response = await fetch(
+    //   `https://www.googleapis.com/books/v1/volumes?q=${
+    //     this.state.searchQuery || "flowers"
+    //   }&startIndex=${this.state.offset}&maxResults=10`
+    // );
+    const response = await fetch(
+      `https://openLibrary.org/search.json?q=${query}&offset=${offset}&limit=10`
+    );
+    return response.json();
+    // const data = await response.json();
+    // this.state.list = [...this.state.list, ...data.items];
+    // this.state.loading = false;
+  }
+
+  async stateHook(path) {
+    if (path === "searchQuery") {
+      this.state.loading = true;
+      const data = await this.loadList(
+        this.state.searchQuery,
+        this.state.offset
+      );
+      this.state.numFound = data.numFound;
+      this.state.list = [...this.state.list, ...data.docs];
+      this.state.loading = false;
+    }
+
+    if (path === "list" || path === "loading") {
+      this.render();
     }
   }
 
   render() {
     const main = document.createElement("main");
     main.innerHTML = `
-        <h1>Search for Books</h1>
-        <form id="search-form">
-          <input type="text" id="search-input" placeholder="Enter book title or author" required />
-          <button type="submit">Search</button>
-        </form>
-        <div id="results"></div>
-      `;
+			<h1>Найдено книг – ${this.state.numFound}</h1>
+		`;
+    main.append(new Search(this.state).render());
+    main.append(new CardList(this.appState, this.state).render());
     this.app.innerHTML = "";
     this.app.append(main);
-    this.appState.favorites.push("Example Book");
+    this.renderHeader();
+    //this.appState.favorites.push("Example Book");
+  }
+
+  renderHeader() {
+    const header = new Header(this.appState);
+    header.render();
+    this.app.prepend(header.element);
   }
 }
