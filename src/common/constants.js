@@ -23,7 +23,7 @@ export const ICONS = {
  * UI Placeholders and common text
  */
 export const PLACEHOLDERS = {
-  IMAGE: "/static/placeholder.png",
+  IMAGE: "./static/placeholder.png",
   TEXT: "-",
   LOADING: "Loading...",
   TITLE: "Untitled",

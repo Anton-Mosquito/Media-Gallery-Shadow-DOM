@@ -38,6 +38,9 @@ jobs:
           let html = fs.readFileSync('index.html', 'utf8');
           html = html.replace(/src=\"dist\/app\.js\"/g, 'src=\"./app.js\"');
           html = html.replace(/href=\"dist\/bundle\.css\"/g, 'href=\"./bundle.css\"');
+          html = html.replace(/href=\"static\/global\.css\"/g, 'href=\"./static/global.css\"');
+          html = html.replace(/src=\"static\//g, 'src=\"./static/');
+          html = html.replace(/href=\"\/static\//g, 'href=\"./static/');
           fs.writeFileSync('dist/index.html', html);
           console.log('✅ dist/index.html prepared with relative paths');
           "
