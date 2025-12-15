@@ -45,6 +45,13 @@ jobs:
           console.log('✅ dist/index.html prepared with relative paths');
           "
 
+      - name: Show dist contents (debug)
+        run: |
+          echo "Dist folder listing:";
+          ls -la dist || true;
+          echo "\nDisk usage:";
+          du -sh dist || true;
+
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
         with:
