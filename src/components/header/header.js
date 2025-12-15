@@ -118,16 +118,16 @@ export class HeaderComponent extends BaseComponent {
       <div class="header">
         <div class="logo">
           <slot name="logo">
-            <img src="/static/cinema.svg" alt="Logo" />
+            <img src="./static/cinema.svg" alt="Logo" />
           </slot>
         </div>
         <div class="menu">
           <a class="menu__item" href="#" data-nav="search">
-            <img src="/static/search.svg" alt="Search icon" />
+            <img src="./static/search.svg" alt="Search icon" />
             <span>Search books</span>
           </a>
           <a class="menu__item" href="#favorites" data-nav="favorites">
-            <img src="/static/favorite.svg" alt="Favorites icon" />
+            <img src="./static/favorite.svg" alt="Favorites icon" />
             <span>Favorites</span>
             <div class="menu__counter">${this.favoritesCount}</div>
           </a>

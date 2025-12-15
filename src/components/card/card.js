@@ -154,8 +154,8 @@ export class CardComponent extends BaseComponent {
       ? "Remove from favorites"
       : "Add to favorites";
     const iconSrc = this.#data.isFavorite
-      ? "/static/favorite.svg"
-      : "/static/favorite-white.svg";
+      ? "./static/favorite.svg"
+      : "./static/favorite-white.svg";
 
     if (this.#data.isFavorite) button.setAttribute("active", "");
     else button.removeAttribute("active");
@@ -234,7 +234,7 @@ export class CardComponent extends BaseComponent {
     img.addEventListener(
       "error",
       () => {
-        img.src = "/static/placeholder.png";
+        img.src = "./static/placeholder.png";
       },
       { once: true }
     );

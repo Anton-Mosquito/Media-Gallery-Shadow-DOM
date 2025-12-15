@@ -90,10 +90,10 @@ export class SearchComponent extends BaseComponent {
             this.getAttribute("placeholder") || "Find a book or author...."
           }"
         >
-          <img slot="icon" src="/static/search.svg" alt="Search icon" />
+          <img slot="icon" src="./static/search.svg" alt="Search icon" />
         </search-input>
         <icon-button class="search__button" aria-label="Search">
-          <img src="/static/search-white.svg" alt="Search icon" />
+          <img src="./static/search-white.svg" alt="Search icon" />
         </icon-button>
       </div>
     `;
