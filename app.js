@@ -1726,7 +1726,7 @@ const FILM_DETAIL_CONSTANTS = {
 var _baseUrl = /*#__PURE__*/new WeakMap();
 class FilmService {
   constructor() {
-    _classPrivateFieldInitSpec(this, _baseUrl, "http://www.omdbapi.com/");
+    _classPrivateFieldInitSpec(this, _baseUrl, "https://www.omdbapi.com/");
   }
   async searchFilms(query) {
     let offset = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 1;
@@ -3442,5 +3442,5 @@ class App {
 new App();
 
 export { App as default };
-//# debugId=441402bc-3f34-4441-a0b3-0fb7e4eeffcb
+//# debugId=4f117b95-da37-474d-822e-e972474cf07e
 //# sourceMappingURL=app.js.map
