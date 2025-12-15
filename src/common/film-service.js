@@ -1,5 +1,5 @@
 export class FilmService {
-  #baseUrl = "http://www.omdbapi.com/";
+  #baseUrl = "https://www.omdbapi.com/";
 
   async searchFilms(query, offset = 1) {
     try {
