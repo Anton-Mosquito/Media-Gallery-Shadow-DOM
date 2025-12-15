@@ -24,10 +24,9 @@ export class Router {
 
     const rootElement = document.getElementById("root");
 
-    // Анімація виходу попереднього view
     if (this.currentView) {
       rootElement.classList.add("page-transition-exit");
-      await this.wait(200); // Чекаємо завершення анімації виходу
+      await this.wait(200);
 
       if (this.currentView?.destroy) {
         this.currentView.destroy();
@@ -36,10 +35,8 @@ export class Router {
       rootElement.classList.remove("page-transition-exit");
     }
 
-    // Створюємо новий екземпляр view з appState
     this.currentView = new route.view(this.appState);
 
-    // Анімація входу нового view
     rootElement.classList.add("page-transition-enter");
     this.currentView.render();
 

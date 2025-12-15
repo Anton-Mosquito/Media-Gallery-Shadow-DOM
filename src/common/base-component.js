@@ -1,4 +1,3 @@
-// src/common/base-component.js
 import { eventBus } from "./event-bus.js";
 
 export class BaseComponent extends HTMLElement {
