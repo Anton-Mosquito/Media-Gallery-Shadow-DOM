@@ -1,0 +1,50 @@
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+      - improvement
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build with Rollup
+        run: npx rollup -c
+
+      - name: Copy static assets to dist
+        run: cp -R static dist/static
+
+      - name: Prepare dist/index.html with relative paths
+        run: |
+          node -e "
+          const fs = require('fs');
+          let html = fs.readFileSync('index.html', 'utf8');
+          html = html.replace(/src=\"dist\/app\.js\"/g, 'src=\"./app.js\"');
+          html = html.replace(/href=\"dist\/bundle\.css\"/g, 'href=\"./bundle.css\"');
+          fs.writeFileSync('dist/index.html', html);
+          console.log('✅ dist/index.html prepared with relative paths');
+          "
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: dist
+          clean: true
